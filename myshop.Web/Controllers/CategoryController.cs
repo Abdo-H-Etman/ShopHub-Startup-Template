@@ -1,22 +1,24 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using myshop.DataAccess;
 using myshop.Entities.Models;
+using Repositories.Interfaces;
 
-namespace myshop.Web.Areas.Admin.Controllers
+namespace myshop.Web.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public CategoryController(ApplicationDbContext context)
+        public CategoryController(IUnitOfWork unitOfWork)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            var categories = _context.Categories.ToList();
-            return View(categories);
+            var categories = await _unitOfWork.Categories.GetAllAsync();
+
+            return View(categories.ToList());
         }
 
         [HttpGet]
@@ -27,12 +29,12 @@ namespace myshop.Web.Areas.Admin.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create(Category category)
+        public async Task<IActionResult> Create(Category category)
         {
             if (ModelState.IsValid)
             {
-                _context.Categories.Add(category);
-                _context.SaveChanges();
+                await _unitOfWork.Categories.AddAsync(category);
+                await _unitOfWork.SaveChangesAsync();
                 TempData["Create"] = "Item has Created Successfully";
                 return RedirectToAction("Index");
             }
@@ -40,25 +42,25 @@ namespace myshop.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null | id == 0)
             {
-                NotFound();
+                return NotFound();
             }
-            var categoryIndb = _context.Categories.Find(id);
+            var categoryIndb = await _unitOfWork.Categories.GetByIdAsync(id!.Value);
 
             return View(categoryIndb);
         }
 
         [HttpPost]
-        public IActionResult Edit(Category category)
+        public async Task<IActionResult> Edit(Category category)
         {
             if (ModelState.IsValid)
             {
-                _context.Categories.Update(category);
+                await _unitOfWork.Categories.UpdateAsync(category);
 
-                _context.SaveChanges();
+                await _unitOfWork.SaveChangesAsync();
                 TempData["Update"] = "Data has Updated Successfully";
                 return RedirectToAction("Index");
             }
@@ -66,29 +68,40 @@ namespace myshop.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult Delete(int? id)
+        public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null | id == 0)
+            if (id == null || id == 0)
             {
-                NotFound();
+                return NotFound();
             }
-            var categoryIndb = _context.Categories.Where(x => x.Id == id).FirstOrDefault();
+
+            var categoryIndb = await _unitOfWork.Categories.GetByIdAsync(id!.Value);
+            if (categoryIndb == null)
+            {
+                return NotFound();
+            }
 
             return View(categoryIndb);
         }
 
-        [HttpPost]
-        public IActionResult DeleteCategory(int? id)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAjax(int? id)
         {
-            var categoryIndb = _context.Categories.FirstOrDefault(x => x.Id == id);
+            if (id == null || id == 0)
+            {
+                return Json(new { success = false, message = "Invalid category id." });
+            }
+
+            var categoryIndb = await _unitOfWork.Categories.GetByIdAsync(id!.Value);
             if (categoryIndb == null)
             {
-                NotFound();
+                return Json(new { success = false, message = "Category not found." });
             }
-            _context.Categories.Remove(categoryIndb);
-            _context.SaveChanges();
-            TempData["Delete"] = "Item has Deleted Successfully";
-            return RedirectToAction("Index");
+
+            await _unitOfWork.Categories.DeleteAsync(id!.Value);
+            await _unitOfWork.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Category deleted successfully." });
         }
     }
 }

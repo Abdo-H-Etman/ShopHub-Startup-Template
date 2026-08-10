@@ -5,17 +5,18 @@ using Microsoft.Extensions.Hosting;
 using myshop.DataAccess;
 using myshop.Entities.Models;
 using myshop.Entities.ViewModels;
+using Repositories.Interfaces;
 
 namespace myshop.Web.Areas.Admin.Controllers
 {
     public class ProductController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IWebHostEnvironment _webHostEnvironment;
 
-        public ProductController(ApplicationDbContext context, IWebHostEnvironment webHostEnvironment)
+        public ProductController(IUnitOfWork unitOfWork, IWebHostEnvironment webHostEnvironment)
         {
-            _context = context;
+            _unitOfWork = unitOfWork;
             _webHostEnvironment = webHostEnvironment;
         }
 
@@ -25,40 +26,42 @@ namespace myshop.Web.Areas.Admin.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetData()
+        public async Task<IActionResult> GetData()
         {
-            var products = _context.Products
-                .Include(x => x.Category)
+            var products = await _unitOfWork.Products.GetAllAsync(q => q.Include(x => x.Category));
+
+            var result = products
                 .Select(x => new
                 {
                     id = x.Id,
                     name = x.Name,
                     description = x.Description,
                     price = x.Price,
-                    categoryName = x.Category.Name
+                    categoryName = x.Category != null ? x.Category.Name : ""
                 })
                 .ToList();
 
-            return Json(new { data = products });
+            return Json(new { data = result });
         }
 
         [HttpGet]
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             ProductVM productVM = new ProductVM()
             {
                 Product = new Product(),
-                CategoryList = _context.Categories.Select(x => new SelectListItem
-                {
-                    Text = x.Name,
-                    Value = x.Id.ToString()
-                })
+                CategoryList = (await _unitOfWork.Categories.GetAllAsync()).
+                    Select(x => new SelectListItem
+                    {
+                        Text = x.Name,
+                        Value = x.Id.ToString()
+                    })
             };
             return View(productVM);
         }
 
         [HttpPost]
-        public IActionResult Create(ProductVM productVM,IFormFile file)
+        public async Task<IActionResult> Create(ProductVM productVM, IFormFile file)
         {
             if (ModelState.IsValid)
             {
@@ -69,22 +72,22 @@ namespace myshop.Web.Areas.Admin.Controllers
                     var Upload = Path.Combine(RootPath, @"Images\Products");
                     var ext = Path.GetExtension(file.FileName);
 
-                    using (var filestream = new FileStream(Path.Combine(Upload,filename+ext),FileMode.Create))
+                    using (var filestream = new FileStream(Path.Combine(Upload, filename + ext), FileMode.Create))
                     {
                         file.CopyTo(filestream);
                     }
                     productVM.Product.Img = @"Images\Products\" + filename + ext;
                 }
 
-                _context.Products.Add(productVM.Product);
-                _context.SaveChanges();
+                await _unitOfWork.Products.AddAsync(productVM.Product);
+                await _unitOfWork.SaveChangesAsync();
                 TempData["Create"] = "Item has Created Successfully";
                 return RedirectToAction("Index");
             }
             return View(productVM.Product);
         }
         [HttpGet]
-        public IActionResult Edit(int? id)
+        public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || id == 0)
             {
@@ -93,8 +96,8 @@ namespace myshop.Web.Areas.Admin.Controllers
 
             ProductVM productVM = new ProductVM()
             {
-                Product = _context.Products.FirstOrDefault(x => x.Id == id),
-                CategoryList = _context.Categories.Select(x => new SelectListItem
+                Product = await _unitOfWork.Products.GetByIdAsync(id.Value),
+                CategoryList = (await _unitOfWork.Categories.GetAllAsync()).Select(x => new SelectListItem
                 {
                     Text = x.Name,
                     Value = x.Id.ToString()
@@ -103,9 +106,9 @@ namespace myshop.Web.Areas.Admin.Controllers
 
             return View(productVM);
         }
-        
+
         [HttpPost]
-        public IActionResult Edit(ProductVM productVM, IFormFile? file)
+        public async Task<IActionResult> Edit(ProductVM productVM, IFormFile? file)
         {
             if (ModelState.IsValid)
             {
@@ -135,38 +138,95 @@ namespace myshop.Web.Areas.Admin.Controllers
                     productVM.Product.Img = @"Images\Products\" + filename + ext;
                 }
 
-                _context.Products.Update(productVM.Product);
-                _context.SaveChanges();
-
+                await _unitOfWork.Products.UpdateAsync(productVM.Product);
+                await _unitOfWork.SaveChangesAsync();
                 TempData["Update"] = "Data has Updated Successfully";
                 return RedirectToAction("Index");
             }
 
             return View(productVM.Product);
         }
-        
-        [HttpDelete]
-        public IActionResult Delete(int? id)
+
+        [HttpGet]
+        public async Task<IActionResult> Delete(int? id)
         {
-            var productIndb = _context.Products.FirstOrDefault(x => x.Id == id);
+            if (id == null || id == 0)
+            {
+                return NotFound();
+            }
+
+            var product = await _unitOfWork.Products.GetByIdAsync(id.Value);
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            var category = (await _unitOfWork.Categories.GetAllAsync())
+                .FirstOrDefault(x => x.Id == product.CategoryId);
+
+            product.Category = category;
+
+            return View(product);
+        }
+
+        // [HttpPost]
+        // [ValidateAntiForgeryToken]
+        // public async Task<IActionResult> DeleteConfirmed(int? id)
+        // {
+        //     if (id == null || id == 0)
+        //     {
+        //         return NotFound();
+        //     }
+
+        //     var productIndb = await _unitOfWork.Products.GetByIdAsync(id.Value);
+        //     if (productIndb == null)
+        //     {
+        //         return NotFound();
+        //     }
+
+        //     if (!string.IsNullOrEmpty(productIndb.Img))
+        //     {
+        //         var oldimg = Path.Combine(_webHostEnvironment.WebRootPath, productIndb.Img.TrimStart('\\'));
+
+        //         if (System.IO.File.Exists(oldimg))
+        //         {
+        //             System.IO.File.Delete(oldimg);
+        //         }
+        //     }
+
+        //     await _unitOfWork.Products.DeleteAsync(id.Value);
+        //     await _unitOfWork.SaveChangesAsync();
+
+        //     TempData["Delete"] = "Item has Deleted Successfully";
+        //     return RedirectToAction("Index");
+        // }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAjax(int? id)
+        {
+            var productIndb = await _unitOfWork.Products.GetByIdAsync(id.Value);
 
             if (productIndb == null)
             {
                 return Json(new { success = false, message = "Error while Deleting" });
             }
 
-            _context.Products.Remove(productIndb);
+            await _unitOfWork.Products.DeleteAsync(id.Value);
+            await _unitOfWork.SaveChangesAsync();
 
-            var oldimg = Path.Combine(_webHostEnvironment.WebRootPath, productIndb.Img.TrimStart('\\'));
-
-            if (System.IO.File.Exists(oldimg))
+            if (!string.IsNullOrEmpty(productIndb.Img))
             {
-                System.IO.File.Delete(oldimg);
+                var oldimg = Path.Combine(_webHostEnvironment.WebRootPath, productIndb.Img.TrimStart('\\'));
+
+                if (System.IO.File.Exists(oldimg))
+                {
+                    System.IO.File.Delete(oldimg);
+                }
             }
 
-            _context.SaveChanges();
+            await _unitOfWork.SaveChangesAsync();
 
-            return Json(new { success = true, message = "file has been Deleted" });
+            return Json(new { success = true, message = "Product has been Deleted" });
         }
 
 
