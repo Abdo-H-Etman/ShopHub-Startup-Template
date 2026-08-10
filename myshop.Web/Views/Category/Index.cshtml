@@ -14,7 +14,7 @@
         background: #ffffff;
         border-radius: 14px;
         border: 1px solid #d0d7de;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
         padding: 20px;
     }
 
@@ -26,11 +26,12 @@
         margin-bottom: 20px;
     }
 
-        .custom-card-header h4 {
-            color: #1e3a8a; /* أزرق فخم */
-            font-weight: 700;
-            margin: 0;
-        }
+    .custom-card-header h4 {
+        color: #1e3a8a;
+        /* أزرق فخم */
+        font-weight: 700;
+        margin: 0;
+    }
 
     /* Table */
     .table-custom {
@@ -39,27 +40,27 @@
         border-spacing: 0 10px;
     }
 
-        .table-custom th {
-            background-color: #1e40af;
-            color: white;
-            font-weight: 600;
-            padding: 12px;
-            border-radius: 8px 8px 0 0;
-        }
+    .table-custom th {
+        background-color: #1e40af;
+        color: white;
+        font-weight: 600;
+        padding: 12px;
+        border-radius: 8px 8px 0 0;
+    }
 
-        .table-custom td {
-            background-color: #fefefe;
-            padding: 12px;
-            color: #1e3a8a;
-            vertical-align: middle;
-            border-bottom: 1px solid #e2e8f0;
-            border-radius: 0;
-        }
+    .table-custom td {
+        background-color: #fefefe;
+        padding: 12px;
+        color: #1e3a8a;
+        vertical-align: middle;
+        border-bottom: 1px solid #e2e8f0;
+        border-radius: 0;
+    }
 
-        .table-custom tr:hover td {
-            background-color: #e0ebff;
-            transition: 0.2s;
-        }
+    .table-custom tr:hover td {
+        background-color: #e0ebff;
+        transition: 0.2s;
+    }
 
     /* Buttons */
     .btn-primary {
@@ -68,14 +69,14 @@
         font-weight: 600;
         background-color: #1e40af;
         color: white;
-        box-shadow: 0 4px 12px rgba(30,64,175,0.3);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
         border: none;
     }
 
-        .btn-primary:hover {
-            background-color: #1e3a8a;
-            box-shadow: 0 6px 15px rgba(30,64,175,0.4);
-        }
+    .btn-primary:hover {
+        background-color: #1e3a8a;
+        box-shadow: 0 6px 15px rgba(30, 64, 175, 0.4);
+    }
 
     .btn-success {
         padding: 6px 14px;
@@ -84,13 +85,13 @@
         color: white;
         font-weight: 600;
         border: none;
-        box-shadow: 0 3px 10px rgba(22,163,74,0.3);
+        box-shadow: 0 3px 10px rgba(22, 163, 74, 0.3);
     }
 
-        .btn-success:hover {
-            background-color: #15803d;
-            box-shadow: 0 4px 12px rgba(22,163,74,0.4);
-        }
+    .btn-success:hover {
+        background-color: #15803d;
+        box-shadow: 0 4px 12px rgba(22, 163, 74, 0.4);
+    }
 
     .btn-danger {
         padding: 6px 14px;
@@ -99,13 +100,13 @@
         color: white;
         font-weight: 600;
         border: none;
-        box-shadow: 0 3px 10px rgba(220,38,38,0.3);
+        box-shadow: 0 3px 10px rgba(220, 38, 38, 0.3);
     }
 
-        .btn-danger:hover {
-            background-color: #b91c1c;
-            box-shadow: 0 4px 12px rgba(220,38,38,0.4);
-        }
+    .btn-danger:hover {
+        background-color: #b91c1c;
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+    }
 
     .top-btn {
         margin-bottom: 15px;
@@ -119,7 +120,7 @@
     </div>
 
     <div class="top-btn">
-        <a class="btn btn-primary" href="/Admin/Category/Create">
+        <a class="btn btn-primary" asp-controller="Category" asp-action="Create">
             <i class="fa-solid fa-circle-plus me-1"></i> Create Category
         </a>
     </div>
@@ -136,17 +137,18 @@
         <tbody>
             @foreach (var item in Model)
             {
-                <tr>
+                <tr data-id="@item.Id">
                     <td>@item.Name</td>
                     <td>@Html.Raw(item.Description)</td>
-                    <td>@item.CreatedTime.ToString("dd MMM yyyy")</td>
+                    <td>@item.CreatedTime.ToString("dd MMM yyyy::hh:mm tt")</td>
                     <td>
-                        <a class="btn btn-success me-1" href="/Admin/Category/Edit/@item.Id">
+                        <a class="btn btn-success me-1" asp-controller="Category" asp-action="Edit" asp-route-id="@item.Id">
                             <i class="fa-solid fa-pen-to-square"></i> Edit
                         </a>
-                        <a class="btn btn-danger" href="/Admin/Category/Delete/@item.Id">
+                        <button type="button" class="btn btn-danger delete-category" data-id="@item.Id"
+                                data-name="@item.Name">
                             <i class="fa-solid fa-trash"></i> Delete
-                        </a>
+                        </button>
                     </td>
                 </tr>
             }
@@ -154,3 +156,8 @@
     </table>
 
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="~/js/category.js"></script>
+}
