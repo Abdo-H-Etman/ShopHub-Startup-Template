@@ -1,40 +1,36 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using myshop.DataAccess;
-using myshop.Entities.Models;
-using Repositories.Interfaces;
+using myshop.BLL.DTOs.Category;
+using myshop.BLL.Services;
 
 namespace myshop.Web.Controllers
 {
     public class CategoryController : Controller
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly ICategoryService _categoryService;
 
-        public CategoryController(IUnitOfWork unitOfWork)
+        public CategoryController(ICategoryService categoryService)
         {
-            _unitOfWork = unitOfWork;
+            _categoryService = categoryService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var categories = await _unitOfWork.Categories.GetAllAsync();
-
+            var categories = await _categoryService.GetAllAsync();
             return View(categories.ToList());
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-
-            return View();
+            return View(new CreateCategoryDto());
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(Category category)
+        public async Task<IActionResult> Create(CreateCategoryDto category)
         {
             if (ModelState.IsValid)
             {
-                await _unitOfWork.Categories.AddAsync(category);
-                await _unitOfWork.SaveChangesAsync();
+                await _categoryService.CreateAsync(category);
                 TempData["Create"] = "Item has Created Successfully";
                 return RedirectToAction("Index");
             }
@@ -44,23 +40,26 @@ namespace myshop.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null | id == 0)
+            if (id == null || id == 0)
             {
                 return NotFound();
             }
-            var categoryIndb = await _unitOfWork.Categories.GetByIdAsync(id!.Value);
 
-            return View(categoryIndb);
+            var category = await _categoryService.GetByIdForUpdateAsync(id.Value);
+            if (category == null)
+            {
+                return NotFound();
+            }
+
+            return View(category);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(Category category)
+        public async Task<IActionResult> Edit(UpdateCategoryDto category)
         {
             if (ModelState.IsValid)
             {
-                await _unitOfWork.Categories.UpdateAsync(category);
-
-                await _unitOfWork.SaveChangesAsync();
+                await _categoryService.UpdateAsync(category);
                 TempData["Update"] = "Data has Updated Successfully";
                 return RedirectToAction("Index");
             }
@@ -75,13 +74,13 @@ namespace myshop.Web.Controllers
                 return NotFound();
             }
 
-            var categoryIndb = await _unitOfWork.Categories.GetByIdAsync(id!.Value);
-            if (categoryIndb == null)
+            var category = await _categoryService.GetByIdAsync(id.Value);
+            if (category == null)
             {
                 return NotFound();
             }
 
-            return View(categoryIndb);
+            return View(category);
         }
 
         [HttpDelete]
@@ -92,15 +91,13 @@ namespace myshop.Web.Controllers
                 return Json(new { success = false, message = "Invalid category id." });
             }
 
-            var categoryIndb = await _unitOfWork.Categories.GetByIdAsync(id!.Value);
-            if (categoryIndb == null)
+            var category = await _categoryService.GetByIdAsync(id.Value);
+            if (category == null)
             {
                 return Json(new { success = false, message = "Category not found." });
             }
 
-            await _unitOfWork.Categories.DeleteAsync(id!.Value);
-            await _unitOfWork.SaveChangesAsync();
-
+            await _categoryService.DeleteAsync(id.Value);
             return Json(new { success = true, message = "Category deleted successfully." });
         }
     }
