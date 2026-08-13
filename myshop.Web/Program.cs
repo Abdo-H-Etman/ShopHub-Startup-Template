@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using myshop.BLL.Mapping;
+using myshop.BLL.Services;
 using myshop.DataAccess;
 using myshop.Entities.Models;
 using Repositories;
@@ -29,6 +30,12 @@ builder.Services.AddSession();
 builder.Services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
 builder.Services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddAutoMapper(configAction =>
+{
+    configAction.AddProfile<MappingProfile>();
+});
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
