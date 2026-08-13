@@ -31,9 +31,16 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
     public async Task<T?> GetByIdAsync(int id) =>
         await _dbSet.FindAsync(id);
 
-    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate) =>
-        await _dbSet.FirstOrDefaultAsync(predicate);
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? include = null)
+    {
+        IQueryable<T> query = _dbSet;
 
+        if (include != null)
+            query = include(query);
+
+        return await query.AsNoTracking()
+                .FirstOrDefaultAsync(predicate);
+    }
     public async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
         int pageNumber,
         int pageSize,
