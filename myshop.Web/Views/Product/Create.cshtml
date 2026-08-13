@@ -15,7 +15,7 @@
         background: #ffffff;
         border-radius: 14px;
         border: 1px solid #d0d7de;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
         padding: 24px;
         margin-bottom: 20px;
     }
@@ -29,30 +29,41 @@
         margin-bottom: 20px;
     }
 
-        .custom-card-header h4 {
-            color: #1e3a8a; /* أزرق فخم */
-            font-weight: 700;
-            margin: 0;
-        }
+    .custom-card-header h4 {
+        color: #1e3a8a;
+        /* أزرق فخم */
+        font-weight: 700;
+        margin: 0;
+    }
 
-    .form-control, textarea, select {
+    .form-control,
+    textarea,
+    select {
         background-color: #fefefe;
         border: 1px solid #a0aec0;
         border-radius: 8px;
         padding: 10px 14px;
         transition: 0.25s ease;
         color: #1e3a8a;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-        .form-control::placeholder, select::placeholder {
-            color: #7f9cf5;
-        }
+    .form-control,
+    select {
+        height: 100%
+    }
 
-        .form-control:focus, textarea:focus, select:focus {
-            border-color: #1e40af;
-            box-shadow: 0 0 0 0.2rem rgba(59,130,246,0.25);
-        }
+    .form-control::placeholder,
+    select::placeholder {
+        color: #7f9cf5;
+    }
+
+    .form-control:focus,
+    textarea:focus,
+    select:focus {
+        border-color: #1e40af;
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+    }
 
     .form-label {
         font-weight: 600;
@@ -67,13 +78,13 @@
         background-color: #1e40af;
         color: white;
         border: none;
-        box-shadow: 0 4px 12px rgba(30,64,175,0.3);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
     }
 
-        .btn-primary:hover {
-            background-color: #1e3a8a;
-            box-shadow: 0 6px 15px rgba(30,64,175,0.4);
-        }
+    .btn-primary:hover {
+        background-color: #1e3a8a;
+        box-shadow: 0 6px 15px rgba(30, 64, 175, 0.4);
+    }
 
     #ImagePreview {
         width: 300px;
@@ -108,7 +119,8 @@
                     <label asp-for="Product.Description" class="form-label">
                         <i class="fa-solid fa-align-left me-1"></i> Description
                     </label>
-                    <textarea asp-for="Product.Description" rows="4" class="form-control" placeholder="Enter description..."></textarea>
+                    <textarea asp-for="Product.Description" rows="4" class="form-control"
+                              placeholder="Enter description..."></textarea>
                     <span asp-validation-for="Product.Description" class="text-danger"></span>
                 </div>
 
@@ -159,7 +171,7 @@
     @await Html.PartialAsync("_ValidationScriptsPartial")
 
     <script>
-        var fillimg = function(event){
+        var fillimg = function (event) {
             var imgholder = document.getElementById("ImagePreview");
             imgholder.src = URL.createObjectURL(event.target.files[0]);
         }
