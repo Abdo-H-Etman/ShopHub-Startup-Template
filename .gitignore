@@ -1,5 +1,7 @@
 .vs/
+.vscode/
 myshop.Web/appsettings.json
 myshop.Web/bin/Debug/net7.0/appsettings.json
 **/bin/
 **/obj/
+myshop.Web/wwwroot/Images/
