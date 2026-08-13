@@ -10,6 +10,7 @@
     <ProjectReference Include="..\myshop.DAL\myshop.DAL.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="16.2.0" />
     <PackageReference Include="Stripe.net" Version="52.3.0-beta.1" />
   </ItemGroup>
 
