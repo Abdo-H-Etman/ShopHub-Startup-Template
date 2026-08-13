@@ -1,4 +1,5 @@
-﻿@model Category
+﻿@using myshop.BLL.DTOs.Category
+@model CreateCategoryDto
 
 @{
     ViewBag.PageTitle = "Category Management";
@@ -9,13 +10,12 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
 <style>
-
     /* Card */
     .custom-card {
         background: #ffffff;
         border-radius: 14px;
         border: 1px solid #d0d7de;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
     }
 
     .custom-card-header {
@@ -25,11 +25,12 @@
         text-align: center;
     }
 
-        .custom-card-header h4 {
-            color: #1e3a8a; /* أزرق فخم */
-            font-weight: 700;
-            margin: 0;
-        }
+    .custom-card-header h4 {
+        color: #1e3a8a;
+        /* أزرق فخم */
+        font-weight: 700;
+        margin: 0;
+    }
 
     /* Inputs */
     .form-control,
@@ -39,24 +40,29 @@
         border-radius: 8px;
         padding: 10px 14px;
         transition: 0.25s ease;
-        color: #1e3a8a; /* نص أزرق */
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        color: #1e3a8a;
+        /* نص أزرق */
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-        .form-control::placeholder {
-            color: #7f9cf5; /* أزرق فاتح */
-        }
+    .form-control::placeholder {
+        color: #7f9cf5;
+        /* أزرق فاتح */
+    }
 
-        .form-control:focus,
-        textarea:focus {
-            border-color: #1e40af; /* أزرق غامق */
-            box-shadow: 0 0 0 0.2rem rgba(59,130,246,0.25); /* أزرق glow */
-        }
+    .form-control:focus,
+    textarea:focus {
+        border-color: #1e40af;
+        /* أزرق غامق */
+        box-shadow: 0 0 0 0.2rem rgba(59, 130, 246, 0.25);
+        /* أزرق glow */
+    }
 
     .form-label {
         font-weight: 600;
         margin-bottom: 6px;
-        color: #1e3a8a; /* أزرق */
+        color: #1e3a8a;
+        /* أزرق */
     }
 
     /* Buttons */
@@ -64,30 +70,31 @@
         padding: 9px 20px;
         font-weight: 600;
         border-radius: 8px;
-        background-color: #1e40af; /* أزرق غامق */
+        background-color: #1e40af;
+        /* أزرق غامق */
         border: none;
         color: white;
-        box-shadow: 0 4px 12px rgba(30,64,175,0.3);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
     }
 
-        .btn-danger:hover {
-            background-color: #1e3a8a;
-            box-shadow: 0 6px 15px rgba(30,64,175,0.4);
-        }
+    .btn-danger:hover {
+        background-color: #1e3a8a;
+        box-shadow: 0 6px 15px rgba(30, 64, 175, 0.4);
+    }
 
     .btn-outline-secondary {
         border-radius: 8px;
         padding: 9px 18px;
-        border-color: #93c5fd; /* أزرق فاتح */
+        border-color: #93c5fd;
+        /* أزرق فاتح */
         font-weight: 600;
         color: #1e3a8a;
     }
 
-        .btn-outline-secondary:hover {
-            background-color: #bfdbfe;
-            color: #1e40af;
-        }
-
+    .btn-outline-secondary:hover {
+        background-color: #bfdbfe;
+        color: #1e40af;
+    }
 </style>
 
 <div class="row justify-content-center">
@@ -108,9 +115,7 @@
                         <label asp-for="Name" class="form-label">
                             <i class="fa-solid fa-tag me-1"></i> Category Name
                         </label>
-                        <input asp-for="Name"
-                               class="form-control"
-                               placeholder="Enter category name..." />
+                        <input asp-for="Name" class="form-control" placeholder="Enter category name..." />
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
 
@@ -119,9 +124,7 @@
                         <label asp-for="Description" class="form-label">
                             <i class="fa-solid fa-align-left me-1"></i> Description
                         </label>
-                        <textarea asp-for="Description"
-                                  rows="4"
-                                  class="form-control"
+                        <textarea asp-for="Description" rows="4" class="form-control"
                                   placeholder="Enter description..."></textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>

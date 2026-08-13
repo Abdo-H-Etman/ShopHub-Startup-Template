@@ -1,4 +1,5 @@
-﻿@model Category
+﻿@using myshop.BLL.DTOs.Category
+@model CategoryListDto
 
 @{
     ViewBag.PageTitle = "Category Management";
@@ -14,7 +15,7 @@
         background: #ffffff;
         border-radius: 14px;
         border: 1px solid #d0d7de;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
         padding: 20px;
     }
 
@@ -26,11 +27,12 @@
         margin-bottom: 20px;
     }
 
-        .custom-card-header h4 {
-            color: #1e3a8a; /* أزرق فخم */
-            font-weight: 700;
-            margin: 0;
-        }
+    .custom-card-header h4 {
+        color: #1e3a8a;
+        /* أزرق فخم */
+        font-weight: 700;
+        margin: 0;
+    }
 
     /* Inputs */
     .form-control {
@@ -39,13 +41,13 @@
         border-radius: 8px;
         padding: 10px 14px;
         color: #1e3a8a;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
     }
 
-        .form-control:disabled {
-            background-color: #f5f5f5;
-            color: #6b7280;
-        }
+    .form-control:disabled {
+        background-color: #f5f5f5;
+        color: #6b7280;
+    }
 
     /* Buttons */
     .btn-danger {
@@ -55,13 +57,13 @@
         background-color: #dc2626;
         color: white;
         border: none;
-        box-shadow: 0 4px 12px rgba(220,38,38,0.3);
+        box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
     }
 
-        .btn-danger:hover {
-            background-color: #b91c1c;
-            box-shadow: 0 6px 15px rgba(220,38,38,0.4);
-        }
+    .btn-danger:hover {
+        background-color: #b91c1c;
+        box-shadow: 0 6px 15px rgba(220, 38, 38, 0.4);
+    }
 
     .btn-outline-secondary {
         border-radius: 8px;
@@ -72,11 +74,10 @@
         text-decoration: none;
     }
 
-        .btn-outline-secondary:hover {
-            background-color: #bfdbfe;
-            color: #1e40af;
-        }
-
+    .btn-outline-secondary:hover {
+        background-color: #bfdbfe;
+        color: #1e40af;
+    }
 </style>
 
 <div class="row justify-content-center">
@@ -108,7 +109,8 @@
                         <label asp-for="Description" class="form-label">
                             <i class="fa-solid fa-align-left me-1"></i> Description
                         </label>
-                        <textarea asp-for="Description" rows="4" class="form-control" disabled>@Html.Raw(Model.Description?.Replace("<", "").Replace(">", ""))</textarea>
+                        <textarea asp-for="Description" rows="4" class="form-control"
+                                  disabled>@Html.Raw(Model.Description?.Replace("<", "").Replace(">", ""))</textarea>
                         <span asp-validation-for="Description" class="text-danger"></span>
                     </div>
 
