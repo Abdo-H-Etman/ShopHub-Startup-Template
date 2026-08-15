@@ -1,12 +1,14 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>myShop | Dashboard</title>
 
     <!-- Google Font -->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap">
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css">
@@ -20,59 +22,62 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 
     <style>
-        body, .nav-link, .brand-text, .content-wrapper {
-            font-family: 'Poppins', sans-serif;
-        }
+            body,
+            .nav-link,
+            .brand-text,
+            .content-wrapper {
+                font-family: 'Poppins', sans-serif;
+            }
 
-        .main-sidebar {
-            background: linear-gradient(180deg,#1e3c72,#2a5298);
-        }
+            .main-sidebar {
+                background: linear-gradient(180deg, #1e3c72, #2a5298);
+            }
 
-        .nav-sidebar > .nav-item > .nav-link {
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: .3s;
-        }
+            .nav-sidebar>.nav-item>.nav-link {
+                border-radius: 8px;
+                margin-bottom: 5px;
+                transition: .3s;
+            }
 
-            .nav-sidebar > .nav-item > .nav-link:hover {
-                background: rgba(255,255,255,.1);
+            .nav-sidebar>.nav-item>.nav-link:hover {
+                background: rgba(255, 255, 255, .1);
                 color: white;
             }
 
-        .brand-link {
-            background: #1e3c72;
-            color: white;
-            font-weight: 600;
-        }
+            .brand-link {
+                background: #1e3c72;
+                color: white;
+                font-weight: 600;
+            }
 
-        .content-wrapper {
-            background: #f4f6f9;
-        }
+            .content-wrapper {
+                background: #f4f6f9;
+            }
 
-        .card {
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,.1);
-            overflow: hidden;
-        }
+            .card {
+                border-radius: 12px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, .1);
+                overflow: hidden;
+            }
 
-        .card-header {
-            background: #1e3c72;
-            color: white;
-            font-weight: 600;
-        }
+            .card-header {
+                background: #1e3c72;
+                color: white;
+                font-weight: 600;
+            }
 
-        .card-tools .btn-tool {
-            color: white;
-        }
+            .card-tools .btn-tool {
+                color: white;
+            }
 
-        .footer-dark {
-            background: #1e3c72;
-            color: white;
-        }
+            .footer-dark {
+                background: #1e3c72;
+                color: white;
+            }
 
-        .user-panel img {
-            border: 2px solid white;
-        }
+            .user-panel img {
+                border: 2px solid white;
+            }
     </style>
 
 </head>
@@ -91,9 +96,7 @@
                 </li>
 
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a asp-controller="Home"
-                       asp-action="Index"
-                       class="nav-link">
+                    <a asp-controller="Home" asp-action="Index" class="nav-link">
                         Home
                     </a>
                 </li>
@@ -103,18 +106,56 @@
                         Contact
                     </a>
                 </li>
+
+            </ul>
+            <ul class="navbar-nav ms-auto">
+
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <i class="fas fa-user-circle me-1"></i>
+                            Hello, @User.Identity.Name
+                        </span>
+                    </li>
+
+                    <li class="nav-item">
+                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+
+                            @Html.AntiForgeryToken()
+
+                            <button type="submit" class="nav-link btn btn-link border-0">
+                                <i class="fas fa-sign-out-alt me-1"></i>
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+                }
+                else
+                {
+                    <li class="nav-item">
+                        <a asp-controller="Account" asp-action="Login" class="nav-link">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            Login
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a asp-controller="Account" asp-action="Register" class="nav-link">
+                            <i class="fas fa-user-plus me-1"></i>
+                            Register
+                        </a>
+                    </li>
+                }
+
             </ul>
         </nav>
 
         <!-- Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
 
-            <a asp-controller="Home"
-               asp-action="Index"
-               class="brand-link">
-                <img src="~/img/AdminLTELogo.png"
-                     class="brand-image img-circle elevation-3"
-                     style="opacity:.8">
+            <a asp-controller="Home" asp-action="Index" class="brand-link">
+                <img src="~/img/AdminLTELogo.png" class="brand-image img-circle elevation-3" style="opacity:.8">
 
                 <span class="brand-text">myShop Admin</span>
             </a>
@@ -123,14 +164,22 @@
 
                 <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                     <div class="image">
-                        <img src="~/img/user2-160x160.jpg"
-                             class="img-circle elevation-2">
+                        <img src="~/img/user2-160x160.jpg" class="img-circle elevation-2">
                     </div>
 
                     <div class="info">
-                        <a href="#" class="d-block">
-                            Administrator
-                        </a>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <a href="http://localhost:5186/Identity/Account/Manage" class="d-block">
+                                @User.Identity.Name
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-controller="Account" asp-action="Login" class="d-block">
+                                Guest
+                            </a>
+                        }
                     </div>
                 </div>
 
@@ -139,45 +188,35 @@
                     <ul class="nav nav-pills nav-sidebar flex-column">
 
                         <li class="nav-item">
-                            <a asp-controller="Dashboard"
-                               asp-action="Index"
-                               class="nav-link">
+                            <a asp-controller="Dashboard" asp-action="Index" class="nav-link">
                                 <i class="nav-icon fas fa-chart-line"></i>
                                 <p>Dashboard</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a asp-controller="Category"
-                               asp-action="Index"
-                               class="nav-link">
+                            <a asp-controller="Category" asp-action="Index" class="nav-link">
                                 <i class="nav-icon fas fa-tags"></i>
                                 <p>Categories</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a asp-controller="Product"
-                               asp-action="Index"
-                               class="nav-link">
+                            <a asp-controller="Product" asp-action="Index" class="nav-link">
                                 <i class="nav-icon fas fa-box-open"></i>
                                 <p>Products</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a asp-controller="Users"
-                               asp-action="Index"
-                               class="nav-link">
+                            <a asp-controller="Users" asp-action="Index" class="nav-link">
                                 <i class="nav-icon fas fa-user"></i>
                                 <p>Users</p>
                             </a>
                         </li>
 
                         <li class="nav-item">
-                            <a asp-controller="Order"
-                               asp-action="Index"
-                               class="nav-link">
+                            <a asp-controller="Order" asp-action="Index" class="nav-link">
                                 <i class="nav-icon fas fa-truck"></i>
                                 <p>Orders</p>
                             </a>
@@ -212,15 +251,11 @@
 
                         <div class="card-tools">
 
-                            <button type="button"
-                                    class="btn btn-tool"
-                                    data-card-widget="collapse">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                 <i class="fas fa-minus"></i>
                             </button>
 
-                            <button type="button"
-                                    class="btn btn-tool"
-                                    data-card-widget="remove">
+                            <button type="button" class="btn btn-tool" data-card-widget="remove">
                                 <i class="fas fa-times"></i>
                             </button>
 
@@ -270,4 +305,5 @@
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
+
 </html>

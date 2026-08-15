@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,82 +9,83 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/myshop.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css" />
 
     <style>
-        body {
-            background: linear-gradient(135deg,#eef2f7 0%,#d9e4f5 40%,#c3dafe 100%);
-            margin: 0;
-            animation: fadeIn .8s ease;
-        }
-
-        @@keyframes fadeIn {
-            from {
-                opacity: 0;
+            body {
+                background: linear-gradient(135deg, #eef2f7 0%, #d9e4f5 40%, #c3dafe 100%);
+                margin: 0;
+                animation: fadeIn .8s ease;
             }
 
-            to {
-                opacity: 1;
-            }
-        }
+            @@keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
 
-        nav.navbar {
-            background: linear-gradient(90deg,#ffffff,#f8fbff) !important;
-            box-shadow: 0 6px 18px rgba(0,0,0,.08);
-            padding: 1rem 0;
-            animation: slideDown .8s ease;
-        }
-
-        @@keyframes slideDown {
-            from {
-                transform: translateY(-35px);
-                opacity: 0;
+                to {
+                    opacity: 1;
+                }
             }
 
-            to {
-                transform: translateY(0);
-                opacity: 1;
+            nav.navbar {
+                background: linear-gradient(90deg, #ffffff, #f8fbff) !important;
+                box-shadow: 0 6px 18px rgba(0, 0, 0, .08);
+                padding: 1rem 0;
+                animation: slideDown .8s ease;
             }
-        }
 
-        .nav-link-box {
-            background: linear-gradient(135deg,#00c6ff,#0072ff);
-            color: white !important;
-            padding: .65rem 1.25rem;
-            margin-left: .75rem;
-            border-radius: 14px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: .3s;
-            box-shadow: 0 4px 12px rgba(0,0,0,.15);
-        }
+            @@keyframes slideDown {
+                from {
+                    transform: translateY(-35px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .nav-link-box {
+                background: linear-gradient(135deg, #00c6ff, #0072ff);
+                color: white !important;
+                padding: .65rem 1.25rem;
+                margin-left: .75rem;
+                border-radius: 14px;
+                text-decoration: none;
+                font-weight: 600;
+                transition: .3s;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+            }
 
             .nav-link-box:hover {
                 transform: translateY(-3px);
-                background: linear-gradient(135deg,#005bea,#00c6fb);
-                box-shadow: 0 8px 18px rgba(0,0,0,.2);
+                background: linear-gradient(135deg, #005bea, #00c6fb);
+                box-shadow: 0 8px 18px rgba(0, 0, 0, .2);
             }
 
-        .home-box {
-            font-size: 1.05rem;
-            padding: .9rem 1.6rem;
-        }
+            .home-box {
+                font-size: 1.05rem;
+                padding: .9rem 1.6rem;
+            }
 
-        footer {
-            background: linear-gradient(90deg,#111,#1b1b1b);
-            color: white;
-            padding: 1.2rem 0;
-            border-top-left-radius: 18px;
-            border-top-right-radius: 18px;
-        }
+            footer {
+                background: linear-gradient(90deg, #111, #1b1b1b);
+                color: white;
+                padding: 1.2rem 0;
+                border-top-left-radius: 18px;
+                border-top-right-radius: 18px;
+            }
 
             footer a {
                 color: white;
                 text-decoration: none;
             }
 
-                footer a:hover {
-                    text-decoration: underline;
-                }
+            footer a:hover {
+                text-decoration: underline;
+            }
     </style>
 </head>
 
@@ -93,16 +95,11 @@
         <nav class="navbar navbar-expand-sm navbar-light border-bottom">
             <div class="container">
 
-                <a class="navbar-brand nav-link-box home-box"
-                   asp-controller="Product"
-                   asp-action="Index">
+                <a class="navbar-brand nav-link-box home-box" asp-controller="Home" asp-action="Index">
                     myshop.Web
                 </a>
 
-                <button class="navbar-toggler"
-                        type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#navbarContent">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -110,21 +107,57 @@
 
                     <ul class="navbar-nav ms-auto">
 
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-box"
-                               asp-controller="Product"
-                               asp-action="Index">
-                                Products
-                            </a>
-                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-box" asp-controller="Product" asp-action="Index">
+                                        Products
+                                    </a>
+                                </li>
 
-                        <li class="nav-item">
-                            <a class="nav-link nav-link-box"
-                               asp-controller="Category"
-                               asp-action="Index">
-                                Categories
-                            </a>
-                        </li>
+                                <li class="nav-item">
+                                    <a class="nav-link nav-link-box" asp-controller="Category" asp-action="Index">
+                                        Categories
+                                    </a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <span class="nav-link">
+                                    <i class="fas fa-user-circle me-1"></i>
+                                    Hello, @User.Identity.Name
+                                </span>
+                            </li>
+
+                            <li class="nav-item">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit" class="nav-link btn btn-link border-0">
+                                        <i class="fas fa-sign-out-alt me-1"></i>
+                                        Logout
+                                    </button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a asp-controller="Account" asp-action="Login" class="nav-link">
+                                    <i class="fas fa-sign-in-alt me-1"></i>
+                                    Login
+                                </a>
+                            </li>
+
+                            <li class="nav-item">
+                                <a asp-controller="Account" asp-action="Register" class="nav-link">
+                                    <i class="fas fa-user-plus me-1"></i>
+                                    Register
+                                </a>
+                            </li>
+                        }
 
                     </ul>
 
@@ -151,4 +184,5 @@
     @await RenderSectionAsync("Scripts", required: false)
 
 </body>
+
 </html>
