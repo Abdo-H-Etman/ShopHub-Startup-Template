@@ -4,6 +4,8 @@ using myshop.BLL.Mapping;
 using myshop.BLL.Services;
 using myshop.DataAccess;
 using myshop.Entities.Models;
+using myshop.Web.Mapping;
+using myshop.Web.Seed;
 using Repositories;
 using Repositories.Interfaces;
 
@@ -16,11 +18,27 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlSer
     builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(
-    options => options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(4)
+builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(
+    options =>
+    {
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(10);
+    }
     ).AddDefaultTokenProviders().AddDefaultUI()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("AdminOnly", policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole("Admin");
+    });
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Account/Login";
+    options.AccessDeniedPath = "/Account/AccessDenied";
+});
 
 builder.Services.AddHttpContextAccessor();
 
@@ -32,15 +50,21 @@ builder.Services.AddScoped<IGenericRepository<Product>, GenericRepository<Produc
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<InitialDataSeeder>();
 builder.Services.AddAutoMapper(configAction =>
 {
     configAction.AddProfile<MappingProfile>();
+    configAction.AddProfile<WebMappingProfile>();
 });
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
     db.Database.Migrate();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<InitialDataSeeder>();
+    await seeder.SeedAsync();
 }
 
 
@@ -74,7 +98,7 @@ app.MapRazorPages();
 //    pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Product}/{action=Index}/{id?}");
+    pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
 
