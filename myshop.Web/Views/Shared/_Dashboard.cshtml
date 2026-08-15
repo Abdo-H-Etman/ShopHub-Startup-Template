@@ -170,7 +170,7 @@
                     <div class="info">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <a href="http://localhost:5186/Identity/Account/Manage" class="d-block">
+                            <a href="#" class="d-block">
                                 @User.Identity.Name
                             </a>
                         }
@@ -209,7 +209,7 @@
                         </li>
 
                         <li class="nav-item">
-                            <a asp-controller="Users" asp-action="Index" class="nav-link">
+                            <a asp-controller="User" asp-action="Index" class="nav-link">
                                 <i class="nav-icon fas fa-user"></i>
                                 <p>Users</p>
                             </a>
