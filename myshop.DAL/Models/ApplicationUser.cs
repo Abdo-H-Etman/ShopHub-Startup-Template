@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 
 namespace myshop.Entities.Models
 {
-    public class ApplicationUser:IdentityUser
+    public class ApplicationUser : IdentityUser<int>
     {
-        [Required]
-        public string Name { get; set; }
-        public string Address { get; set; }
-        public string City { get; set; }
+        public required string Name { get; set; }
+        public string? Address { get; set; }
+        public string? City { get; set; }
     }
 }
