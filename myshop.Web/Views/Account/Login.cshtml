@@ -1,0 +1,133 @@
+@using myshop.Entities.ViewModels.Account
+@model LoginVM
+
+@{
+    ViewBag.PageTitle = "Account";
+    ViewBag.CardTitle = "Login";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .custom-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #d0d7de;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, .12);
+        padding: 24px;
+    }
+
+    .custom-card-header {
+        background: #f1f5fb;
+        border-bottom: 1px solid #d0d7de;
+        padding: 18px 0;
+        text-align: center;
+        border-radius: 14px 14px 0 0;
+        margin-bottom: 20px;
+    }
+
+    .custom-card-header h4 {
+        color: #1e3a8a;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .form-control {
+        border-radius: 8px;
+        border: 1px solid #a0aec0;
+        color: #1e3a8a;
+        padding: 10px 14px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .05);
+    }
+
+    .form-control:focus {
+        border-color: #1e40af;
+        box-shadow: 0 0 0 .2rem rgba(59, 130, 246, .25);
+    }
+
+    .form-label {
+        color: #1e3a8a;
+        font-weight: 600;
+    }
+
+    .btn-primary {
+        background: #1e40af;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 10px;
+    }
+
+    .btn-primary:hover {
+        background: #1e3a8a;
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+
+        <div class="custom-card">
+
+            <div class="custom-card-header">
+                <h4>
+                    <i class="fa-solid fa-right-to-bracket me-2"></i>
+                    @ViewBag.CardTitle
+                </h4>
+            </div>
+
+            <form asp-action="Login" method="post">
+                <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label asp-for="UserName" class="form-label">
+                        <i class="fa-solid fa-user me-1"></i>
+                        Username
+                    </label>
+
+                    <input asp-for="UserName" class="form-control" placeholder="Enter username..." />
+
+                    <span asp-validation-for="UserName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Password" class="form-label">
+                        <i class="fa-solid fa-lock me-1"></i>
+                        Password
+                    </label>
+
+                    <input asp-for="Password" class="form-control" placeholder="Enter password..." />
+
+                    <span asp-validation-for="Password" class="text-danger"></span>
+                </div>
+
+                <div class="form-check mb-4">
+                    <input asp-for="RememberMe" class="form-check-input" />
+
+                    <label asp-for="RememberMe" class="form-check-label">
+                        Remember Me
+                    </label>
+                </div>
+
+                <button class="btn btn-primary w-100">
+                    <i class="fa-solid fa-right-to-bracket me-1"></i>
+                    Login
+                </button>
+                <div class="text-center mt-4">
+                    <span class="text-muted">Don't have an account?</span>
+                    <a asp-action="Register" asp-controller="Account"
+                       class="text-decoration-none fw-semibold text-primary ms-1">
+                        Create one
+                    </a>
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
