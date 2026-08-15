@@ -1,4 +1,7 @@
 using Microsoft.AspNetCore.Identity;
+using myshop.BLL.DTOs.Category;
+using myshop.BLL.DTOs.Product;
+using myshop.BLL.Services;
 using myshop.Entities.Models;
 
 namespace myshop.Web.Seed;
@@ -7,26 +10,35 @@ public class InitialDataSeeder
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<IdentityRole<int>> _roleManager;
+    private readonly ICategoryService _categoryService;
+    private readonly IProductService _productService;
 
     public InitialDataSeeder(
         UserManager<ApplicationUser> userManager,
-        RoleManager<IdentityRole<int>> roleManager)
+        RoleManager<IdentityRole<int>> roleManager,
+        ICategoryService categoryService,
+        IProductService productService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
+        _categoryService = categoryService;
+        _productService = productService;
     }
 
     public async Task SeedAsync()
     {
         await SeedRolesAsync();
         await SeedAdminUserAsync();
+        await SeedSomeUsersAsync();
+        await SeedSomeCategoriesAsync();
+        await SeedSomeProductsAsync();
     }
     private async Task SeedAdminUserAsync()
     {
         var adminUser = await _userManager.FindByNameAsync("admin");
         if (adminUser == null)
         {
-            string adminPassword = "Admin@123"; // Set a strong password for the admin user
+            string adminPassword = "Admin@123";
             var newAdmin = new ApplicationUser
             {
                 UserName = "admin",
@@ -44,6 +56,100 @@ public class InitialDataSeeder
 
         if (!await _userManager.IsInRoleAsync(adminUser, "Admin"))
             await _userManager.AddToRoleAsync(adminUser, "Admin");
+    }
+
+    private async Task SeedSomeUsersAsync()
+    {
+        var user1 = await _userManager.FindByNameAsync("user1");
+        if (user1 == null)
+        {
+            string userPassword = "User@123";
+            var newUser1 = new ApplicationUser
+            {
+                UserName = "user1",
+                Name = "User One",
+                Email = "user1@myshop.com",
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(newUser1, userPassword);
+            if (!result.Succeeded)
+                throw new Exception($"Failed to create user1: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+
+            user1 = newUser1;
+        }
+
+        if (!await _userManager.IsInRoleAsync(user1, "Customer"))
+            await _userManager.AddToRoleAsync(user1, "Customer");
+
+        var user2 = await _userManager.FindByNameAsync("user2");
+        if (user2 == null)
+        {
+            string userPassword = "User@123";
+            var newUser2 = new ApplicationUser
+            {
+                UserName = "user2",
+                Name = "User Two",
+                Email = "user2@myshop.com",
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(newUser2, userPassword);
+            if (!result.Succeeded)
+                throw new Exception($"Failed to create user2: {string.Join(", ", result.Errors.Select(e => e.Description))}");
+
+            user2 = newUser2;
+        }
+
+        if (!await _userManager.IsInRoleAsync(user2, "Customer"))
+            await _userManager.AddToRoleAsync(user2, "Customer");
+    }
+
+    private async Task SeedSomeCategoriesAsync()
+    {
+        var categories = await _categoryService.GetAllAsync();
+
+        if (!categories.Any())
+        {
+            var defaultCategories = new List<CreateCategoryDto>
+            {
+                new CreateCategoryDto { Name = "Electronics" },
+                new CreateCategoryDto { Name = "Books" },
+                new CreateCategoryDto { Name = "Clothing" },
+                new CreateCategoryDto { Name = "Home & Kitchen" }
+            };
+
+            foreach (var category in defaultCategories)
+            {
+                await _categoryService.CreateAsync(category);
+            }
+        }
+    }
+
+    private async Task SeedSomeProductsAsync()
+    {
+        var products = await _productService.GetAllAsync();
+
+        if (!products.Any())
+        {
+            var defaultProducts = new List<CreateProductDto>
+            {
+                new CreateProductDto { Name = "Smartphone", Description = "Latest model smartphone", Price = 699.99m,
+                                CategoryId = 1,
+                                Img = "Images\\Products\\5f4d61ba-5f02-4a22-8305-1148a341710f.jpg" },
+                new CreateProductDto { Name = "Laptop", Description = "High performance laptop", Price = 1299.99m,
+                                CategoryId = 1,
+                                Img = "Images\\Products\\42af8ba8-65df-417b-908c-ffb6cfcdfc0c.jpg" },
+                new CreateProductDto { Name = "Barca-Shirt", Description = "Comfortable cotton Sports shirt", Price = 14.99m,
+                                CategoryId = 3,
+                                Img = "Images\\Products\\eb1e8683-8559-4957-92c0-773fd02e4c7c.jpg" }
+            };
+
+            foreach (var product in defaultProducts)
+            {
+                await _productService.CreateAsync(product, null, "wwwroot");
+            }
+        }
     }
 
     private async Task SeedRolesAsync()
