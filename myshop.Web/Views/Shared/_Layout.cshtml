@@ -47,6 +47,25 @@
                 }
             }
 
+            .admin-panel-btn {
+                display: inline-block;
+                background: linear-gradient(135deg, #00c6ff, #0072ff);
+                color: white;
+                padding: .7rem 1.4rem;
+                border-radius: 14px;
+                text-decoration: none;
+                font-weight: 600;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, .15);
+                transition: .3s ease;
+            }
+
+            .admin-panel-btn:hover {
+                color: white;
+                transform: translateY(-3px);
+                background: linear-gradient(135deg, #005bea, #00c6fb);
+                box-shadow: 0 8px 18px rgba(0, 0, 0, .2);
+            }
+
             .nav-link-box {
                 background: linear-gradient(135deg, #00c6ff, #0072ff);
                 color: white !important;
@@ -95,10 +114,6 @@
         <nav class="navbar navbar-expand-sm navbar-light border-bottom">
             <div class="container">
 
-                <a class="navbar-brand nav-link-box home-box" asp-controller="Home" asp-action="Index">
-                    myshop.Web
-                </a>
-
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -109,20 +124,6 @@
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <li class="nav-item">
-                                    <a class="nav-link nav-link-box" asp-controller="Product" asp-action="Index">
-                                        Products
-                                    </a>
-                                </li>
-
-                                <li class="nav-item">
-                                    <a class="nav-link nav-link-box" asp-controller="Category" asp-action="Index">
-                                        Categories
-                                    </a>
-                                </li>
-                            }
                             <li class="nav-item">
                                 <span class="nav-link">
                                     <i class="fas fa-user-circle me-1"></i>
@@ -169,6 +170,16 @@
 
     <main class="container flex-grow-1 py-4">
         @RenderBody()
+
+        @if (User.IsInRole("Admin"))
+        {
+            <div class="text-center" style="margin-top: 40px;">
+                <a class="admin-panel-btn" asp-controller="Product" asp-action="Index">
+                    <i class="fas fa-user-shield me-1"></i>
+                    Admin Panel
+                </a>
+            </div>
+        }
     </main>
 
     <footer class="mt-auto">
