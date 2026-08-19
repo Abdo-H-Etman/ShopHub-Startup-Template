@@ -5,6 +5,7 @@ using myshop.BLL.Services;
 
 namespace myshop.Web.Controllers;
 
+[Area("Admin")]
 [Authorize(Policy = "AdminOnly")]
 public class CategoryController : Controller
 {

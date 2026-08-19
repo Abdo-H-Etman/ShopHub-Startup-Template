@@ -20,7 +20,7 @@ $(document).ready(function () {
             }
 
             $.ajax({
-                url: "/Category/DeleteAjax",
+                url: "/Admin/Category/DeleteAjax",
                 type: "DELETE",
                 data: { id: id },
                 success: function (response) {
