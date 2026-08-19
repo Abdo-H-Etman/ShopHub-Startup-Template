@@ -16,17 +16,14 @@ public class ProductController : Controller
 {
     private readonly IProductService _productService;
     private readonly ICategoryService _categoryService;
-    private readonly IWebHostEnvironment _webHostEnvironment;
     private readonly IMapper _mapper;
 
     public ProductController(IProductService productService,
                 ICategoryService categoryService,
-                IWebHostEnvironment webHostEnvironment,
                 IMapper mapper)
     {
         _productService = productService;
         _categoryService = categoryService;
-        _webHostEnvironment = webHostEnvironment;
         _mapper = mapper;
     }
 
@@ -40,16 +37,6 @@ public class ProductController : Controller
     {
         var products = await _productService.GetAllAsync();
 
-        // var result = products
-        //     .Select(x => new
-        //     {
-        //         id = x.Id,
-        //         name = x.Name,
-        //         description = x.Description,
-        //         price = x.Price,
-        //         categoryName = x.CategoryName
-        //     })
-        //     .ToList();
 
         return Json(new { data = products });
     }
@@ -74,10 +61,24 @@ public class ProductController : Controller
             return View(productVM);
         }
 
-        CreateProductDto createProduct = _mapper.Map<CreateProductDto>(productVM.Product);
-        await _productService.CreateAsync(createProduct, file, _webHostEnvironment.WebRootPath);
-        TempData["Create"] = "Product has Created Successfully";
-        return RedirectToAction("Index");
+        try
+        {
+            CreateProductDto createProduct = _mapper.Map<CreateProductDto>(productVM.Product);
+
+            await _productService.CreateAsync(createProduct, file);
+
+            TempData["Create"] = "Product has Created Successfully";
+
+            return RedirectToAction("Index");
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError("file", ex.Message);
+
+            productVM.CategoryList = await GetCategories();
+
+            return View(productVM);
+        }
     }
 
     [HttpGet]
@@ -112,9 +113,22 @@ public class ProductController : Controller
             return View(productVM);
         }
 
-        await _productService.UpdateAsync(productVM.Product.Id, productVM.Product, file, _webHostEnvironment.WebRootPath);
-        TempData["Update"] = "Product has Updated Successfully";
-        return RedirectToAction("Index");
+        try
+        {
+            await _productService.UpdateAsync(productVM.Product.Id, productVM.Product, file);
+
+            TempData["Update"] = "Product has Updated Successfully";
+
+            return RedirectToAction("Index");
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError("file", ex.Message);
+
+            productVM.CategoryList = await GetCategories();
+
+            return View(productVM);
+        }
     }
 
     [HttpGet]
@@ -144,7 +158,7 @@ public class ProductController : Controller
 
         try
         {
-            await _productService.DeleteAsync(id.Value, _webHostEnvironment.WebRootPath);
+            await _productService.DeleteAsync(id.Value);
             return Json(new { success = true, message = "Product has been Deleted" });
         }
         catch (InvalidOperationException)
