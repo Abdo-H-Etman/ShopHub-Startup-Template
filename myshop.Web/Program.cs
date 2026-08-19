@@ -6,6 +6,7 @@ using myshop.DataAccess;
 using myshop.Entities.Models;
 using myshop.Web.Mapping;
 using myshop.Web.Seed;
+using myshop.Web.Services;
 using Repositories;
 using Repositories.Interfaces;
 
@@ -52,6 +53,7 @@ builder.Services.AddScoped<ICategoryService, CategoryService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IFileService, LocalFileService>();
 builder.Services.AddScoped<InitialDataSeeder>();
 builder.Services.AddAutoMapper(configAction =>
 {
