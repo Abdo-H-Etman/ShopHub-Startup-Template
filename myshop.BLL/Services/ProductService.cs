@@ -11,11 +11,13 @@ public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
+    private readonly IFileService _fileService;
 
-    public ProductService(IUnitOfWork unitOfWork, IMapper mapper)
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IFileService fileService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
+        _fileService = fileService;
     }
 
     public async Task<IEnumerable<ProductListDto>> GetAllAsync()
@@ -39,27 +41,20 @@ public class ProductService : IProductService
 
         return _mapper.Map<UpdateProductDto>(product);
     }
-    public async Task CreateAsync(CreateProductDto dto, IFormFile? file, string webRootPath)
+    public async Task CreateAsync(CreateProductDto dto, IFormFile? file)
     {
         if (file is not null)
         {
-            var filename = Guid.NewGuid().ToString();
-            var uploadPath = Path.Combine(webRootPath, "Images", "Products");
-            Directory.CreateDirectory(uploadPath);
-            var ext = Path.GetExtension(file.FileName);
-
-            using var stream = new FileStream(Path.Combine(uploadPath, filename + ext), FileMode.Create);
-            await file.CopyToAsync(stream);
-
-            dto.Img = Path.Combine("Images", "Products", filename + ext).Replace('\\', '/');
+            dto.Img = await _fileService.SaveFileAsync(file);
         }
 
         var product = _mapper.Map<Product>(dto);
+
         await _unitOfWork.Products.AddAsync(product);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(int id, UpdateProductDto dto, IFormFile? file, string webRootPath)
+    public async Task UpdateAsync(int id, UpdateProductDto dto, IFormFile? file)
     {
         var existingProduct = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == id);
         if (existingProduct is null)
@@ -69,24 +64,9 @@ public class ProductService : IProductService
 
         if (file is not null)
         {
-            if (!string.IsNullOrWhiteSpace(existingProduct.Img))
-            {
-                var oldImagePath = Path.Combine(webRootPath, existingProduct.Img.TrimStart('~', '/').Replace('/', Path.DirectorySeparatorChar));
-                if (File.Exists(oldImagePath))
-                {
-                    File.Delete(oldImagePath);
-                }
-            }
+            _fileService.DeleteFile(existingProduct.Img);
 
-            var filename = Guid.NewGuid().ToString();
-            var uploadPath = Path.Combine(webRootPath, "Images", "Products");
-            Directory.CreateDirectory(uploadPath);
-            var ext = Path.GetExtension(file.FileName);
-
-            using var stream = new FileStream(Path.Combine(uploadPath, filename + ext), FileMode.Create);
-            await file.CopyToAsync(stream);
-
-            dto.Img = Path.Combine("Images", "Products", filename + ext).Replace('\\', '/');
+            dto.Img = await _fileService.SaveFileAsync(file);
         }
         else
         {
@@ -95,12 +75,12 @@ public class ProductService : IProductService
 
         dto.Id = id;
         _mapper.Map(dto, existingProduct);
-        // existingProduct.Category = existingProduct.Category;
+
         await _unitOfWork.Products.UpdateAsync(existingProduct);
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id, string webRootPath)
+    public async Task DeleteAsync(int id)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product is null)
@@ -108,14 +88,7 @@ public class ProductService : IProductService
             throw new InvalidOperationException("Product not found.");
         }
 
-        if (!string.IsNullOrWhiteSpace(product.Img))
-        {
-            var filePath = Path.Combine(webRootPath, product.Img.TrimStart('~', '/').Replace('/', Path.DirectorySeparatorChar));
-            if (File.Exists(filePath))
-            {
-                File.Delete(filePath);
-            }
-        }
+        _fileService.DeleteFile(product.Img);
 
         await _unitOfWork.Products.DeleteAsync(id);
         await _unitOfWork.SaveChangesAsync();

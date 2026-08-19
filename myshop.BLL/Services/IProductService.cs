@@ -8,7 +8,7 @@ public interface IProductService
     Task<IEnumerable<ProductListDto>> GetAllAsync();
     Task<ProductListDto?> GetByIdAsync(int id);
     Task<UpdateProductDto?> GetByIdForUpdateAsync(int id);
-    Task CreateAsync(CreateProductDto dto, IFormFile? file, string webRootPath);
-    Task UpdateAsync(int id, UpdateProductDto dto, IFormFile? file, string webRootPath);
-    Task DeleteAsync(int id, string webRootPath);
+    Task CreateAsync(CreateProductDto dto, IFormFile? file);
+    Task UpdateAsync(int id, UpdateProductDto dto, IFormFile? file);
+    Task DeleteAsync(int id);
 }

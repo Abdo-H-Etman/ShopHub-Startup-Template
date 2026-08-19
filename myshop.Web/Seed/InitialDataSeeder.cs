@@ -12,17 +12,20 @@ public class InitialDataSeeder
     private readonly RoleManager<IdentityRole<int>> _roleManager;
     private readonly ICategoryService _categoryService;
     private readonly IProductService _productService;
+    private readonly IFileService _fileService;
 
     public InitialDataSeeder(
         UserManager<ApplicationUser> userManager,
         RoleManager<IdentityRole<int>> roleManager,
         ICategoryService categoryService,
-        IProductService productService)
+        IProductService productService,
+        IFileService fileService)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _categoryService = categoryService;
         _productService = productService;
+        _fileService = fileService;
     }
 
     public async Task SeedAsync()
@@ -132,22 +135,28 @@ public class InitialDataSeeder
 
         if (!products.Any())
         {
+            var smartPhoneImg = await _fileService.CopyFileAsync("Images/Products/5f4d61ba-5f02-4a22-8305-1148a341710f.jpg");
+
+            var laptopImg = await _fileService.CopyFileAsync("Images/Products/42af8ba8-65df-417b-908c-ffb6cfcdfc0c.jpg");
+
+            var barcaShirtImg = await _fileService.CopyFileAsync("Images/Products/eb1e8683-8559-4957-92c0-773fd02e4c7c.jpg");
+
             var defaultProducts = new List<CreateProductDto>
             {
                 new CreateProductDto { Name = "Smartphone", Description = "Latest model smartphone", Price = 699.99m,
-                                CategoryId = 1,
-                                Img = "Images\\Products\\5f4d61ba-5f02-4a22-8305-1148a341710f.jpg" },
+                                CategoryId = 1002,
+                                Img = smartPhoneImg },
                 new CreateProductDto { Name = "Laptop", Description = "High performance laptop", Price = 1299.99m,
-                                CategoryId = 1,
-                                Img = "Images\\Products\\42af8ba8-65df-417b-908c-ffb6cfcdfc0c.jpg" },
+                                CategoryId = 1002,
+                                Img = laptopImg },
                 new CreateProductDto { Name = "Barca-Shirt", Description = "Comfortable cotton Sports shirt", Price = 14.99m,
-                                CategoryId = 3,
-                                Img = "Images\\Products\\eb1e8683-8559-4957-92c0-773fd02e4c7c.jpg" }
+                                CategoryId = 1004,
+                                Img = barcaShirtImg }
             };
 
             foreach (var product in defaultProducts)
             {
-                await _productService.CreateAsync(product, null, "wwwroot");
+                await _productService.CreateAsync(product, null);
             }
         }
     }
