@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/myshop.Web.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/plugins/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
     <style>
             body {
@@ -113,6 +114,8 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light border-bottom">
             <div class="container">
+                <a asp-controller="Cart" asp-action="Index" class="fa-solid fa-cart-shopping fa-xl"></a>
+
                 @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
                 {
                     <a class="navbar-brand nav-link-box home-box" asp-area="Admin" asp-controller="Product"
@@ -187,6 +190,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
