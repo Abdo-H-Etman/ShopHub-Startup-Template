@@ -2,7 +2,7 @@ $(document).ready(function () {
 
     const table = $("#mytable").DataTable({
         ajax: {
-            url: "/User/GetData",
+            url: "/Admin/User/GetData",
             type: "GET",
             dataSrc: "data"
         },
@@ -170,7 +170,7 @@ $(document).ready(function () {
             }
 
             $.ajax({
-                url: "/User/ChangeRole",
+                url: "/Admin/User/ChangeRole",
                 type: "POST",
                 data: {
                     userId: id,
@@ -244,7 +244,7 @@ $(document).ready(function () {
             }
 
             $.ajax({
-                url: "/User/Lock",
+                url: "/Admin/User/Lock",
                 type: "POST",
                 data: {
                     userId: id
@@ -317,7 +317,7 @@ $(document).ready(function () {
             }
 
             $.ajax({
-                url: "/User/Unlock",
+                url: "/Admin/User/Unlock",
                 type: "POST",
                 data: {
                     userId: id
@@ -392,7 +392,7 @@ $(document).ready(function () {
             }
 
             $.ajax({
-                url: "/User/DeleteAjax",
+                url: "/Admin/User/DeleteAjax",
                 type: "DELETE",
                 data: {
                     id: id

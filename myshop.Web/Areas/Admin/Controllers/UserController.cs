@@ -6,6 +6,7 @@ using myshop.Entities.Models;
 
 namespace myshop.Web.Controllers;
 
+[Area("Admin")]
 [Authorize(Roles = "Admin")]
 public class UserController : Controller
 {
