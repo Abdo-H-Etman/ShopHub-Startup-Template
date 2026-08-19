@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using myshop.BLL.Services;
 using myshop.Entities.Models;
 using System.Diagnostics;
 
@@ -8,9 +9,16 @@ namespace myshop.Web.Controllers;
 [AllowAnonymous]
 public class HomeController : Controller
 {
-    public IActionResult Index()
+    private readonly IProductService _productService;
+
+    public HomeController(IProductService productService)
     {
-        return View();
+        _productService = productService;
+    }
+    public async Task<IActionResult> Index()
+    {
+        var products = await _productService.GetAllAsync();
+        return View(products);
     }
 
     public IActionResult Privacy()
