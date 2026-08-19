@@ -5,3 +5,4 @@ myshop.Web/bin/Debug/net7.0/appsettings.json
 **/bin/
 **/obj/
 myshop.Web/wwwroot/Images/
+myshop.Web/wwwroot/Uploads/
