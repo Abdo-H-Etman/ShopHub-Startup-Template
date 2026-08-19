@@ -1,8 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using myshop.BLL.DTOs.Account;
 using myshop.BLL.Services;
+using myshop.Entities.Models;
 using myshop.Entities.ViewModels.Account;
 
 namespace myshop.Web.Controllers;
@@ -12,13 +14,19 @@ public class AccountController : Controller
 {
     private readonly IAccountService _accountService;
     private readonly IMapper _mapper;
+    private readonly ICartService _cartService;
+    private readonly UserManager<ApplicationUser> _userManager;
 
     public AccountController(
         IAccountService accountService,
-        IMapper mapper)
+        IMapper mapper,
+        ICartService cartService,
+        UserManager<ApplicationUser> userManager)
     {
         _accountService = accountService;
         _mapper = mapper;
+        _cartService = cartService;
+        _userManager = userManager;
     }
 
     [HttpGet]
@@ -98,6 +106,12 @@ public class AccountController : Controller
             return View(vm);
         }
 
+        var user = await _userManager.FindByNameAsync(vm.UserName);
+        if (user != null)
+        {
+            _cartService.MigrateGuestCart(user.Id.ToString());
+        }
+
         if (!string.IsNullOrEmpty(returnUrl) &&
             Url.IsLocalUrl(returnUrl))
         {
@@ -110,6 +124,7 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout()
     {
         await _accountService.LogoutAsync();
+        HttpContext.Session.Clear();
 
         return RedirectToAction("Index", "Home");
     }
