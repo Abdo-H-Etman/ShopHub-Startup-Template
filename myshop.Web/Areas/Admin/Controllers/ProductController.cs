@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -11,6 +11,7 @@ using myshop.Entities.ViewModels;
 
 namespace myshop.Web.Areas.Admin.Controllers;
 
+[Area("Admin")]
 [Authorize(Policy = "AdminOnly")]
 public class ProductController : Controller
 {

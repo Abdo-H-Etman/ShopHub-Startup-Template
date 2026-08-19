@@ -1,8 +1,8 @@
-﻿$(document).ready(function () {
+$(document).ready(function () {
 
     const table = $("#mytable").DataTable({
         ajax: {
-            url: "/Product/GetData",
+            url: "/Admin/Product/GetData",
             type: "GET",
             dataSrc: "data"
         },
@@ -15,7 +15,7 @@
                 data: "id",
                 render: function (data, type, row) {
                     return `
-                        <a href="/Product/Edit/${row.id}" class="btn btn-success btn-sm">
+                        <a href="/Admin/Product/Edit/${row.id}" class="btn btn-success btn-sm">
                             <i class="fa-solid fa-pen"></i>
                         </a>
 
@@ -64,7 +64,7 @@
             }
 
             $.ajax({
-                url: "/Product/DeleteAjax",
+                url: "/Admin/Product/DeleteAjax",
                 type: "DELETE",
                 data: { id: id },
                 success: function (response) {
