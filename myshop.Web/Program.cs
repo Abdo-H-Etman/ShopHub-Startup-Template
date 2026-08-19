@@ -43,9 +43,15 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddHttpContextAccessor();
 
-
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
+
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
 builder.Services.AddScoped<IGenericRepository<Category>, GenericRepository<Category>>();
 builder.Services.AddScoped<IGenericRepository<Product>, GenericRepository<Product>>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -54,6 +60,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 builder.Services.AddScoped<IFileService, LocalFileService>();
+builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<InitialDataSeeder>();
 builder.Services.AddAutoMapper(configAction =>
 {
@@ -83,16 +90,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
 
 app.UseAuthentication();
 
 app.UseAuthorization();
-
-app.UseSession();
 
 app.MapRazorPages();
 
