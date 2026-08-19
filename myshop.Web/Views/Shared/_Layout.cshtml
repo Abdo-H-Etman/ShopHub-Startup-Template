@@ -113,6 +113,13 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light border-bottom">
             <div class="container">
+                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                {
+                    <a class="navbar-brand nav-link-box home-box" asp-area="Admin" asp-controller="Product"
+                       asp-action="Index">
+                        Admin Pannel
+                    </a>
+                }
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
@@ -170,16 +177,6 @@
 
     <main class="container flex-grow-1 py-4">
         @RenderBody()
-
-        @if (User.IsInRole("Admin"))
-        {
-            <div class="text-center" style="margin-top: 40px;">
-                <a class="admin-panel-btn" asp-area="Admin" asp-controller="Product" asp-action="Index">
-                    <i class="fas fa-user-shield me-1"></i>
-                    Admin Panel
-                </a>
-            </div>
-        }
     </main>
 
     <footer class="mt-auto">
