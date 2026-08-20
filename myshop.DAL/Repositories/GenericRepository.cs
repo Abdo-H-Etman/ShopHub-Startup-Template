@@ -45,21 +45,33 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         int pageNumber,
         int pageSize,
         Expression<Func<T, bool>>? predicate = null,
-        Func<IQueryable<T>, IQueryable<T>>? include = null)
+        Func<IQueryable<T>, IQueryable<T>>? include = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
     {
-        IQueryable<T> query = _dbSet;
+        if (pageNumber < 1)
+            pageNumber = 1;
+
+        if (pageSize < 1)
+            pageSize = 10;
+
+        IQueryable<T> query = _dbSet.AsNoTracking();
 
         if (predicate != null)
         {
             query = query.Where(predicate);
         }
 
+        int totalCount = await query.CountAsync();
+
         if (include != null)
         {
             query = include(query);
         }
 
-        int totalCount = await query.CountAsync();
+        if (orderBy != null)
+        {
+            query = orderBy(query);
+        }
         var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
         return (items, totalCount);

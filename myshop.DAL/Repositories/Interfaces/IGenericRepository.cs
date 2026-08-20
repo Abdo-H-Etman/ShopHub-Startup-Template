@@ -11,7 +11,8 @@ public interface IGenericRepository<T> where T : class
         int pageNumber,
         int pageSize,
         Expression<Func<T, bool>>? predicate = null,
-        Func<IQueryable<T>, IQueryable<T>>? include = null);
+        Func<IQueryable<T>, IQueryable<T>>? include = null,
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
     Task AddAsync(T entity);
     Task UpdateAsync(T entity);
     Task DeleteAsync(int id);
