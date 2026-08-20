@@ -1,227 +1,203 @@
-# ShopHub System
+# ShopHub E-Commerce System
 
-A clean and extensible **ASP.NET Core MVC E-Commerce System** built with **.NET 10**, **Entity Framework Core**, **ASP.NET Core Identity**, and a layered architecture.
+A modern, robust, and extensible **ASP.NET Core MVC E-Commerce Platform** built with **.NET 10**, **C# 13**, **Entity Framework Core 10**, and **ASP.NET Core Identity**, adhering to a clean **3-Tier Layered Architecture**.
 
-The project is designed to provide a solid foundation for building E-Commerce applications while demonstrating practical backend development concepts such as service-layer separation, repository/unit-of-work patterns, DTOs, AutoMapper, authentication, authorization, role management, database migrations, and initial data seeding.
+ShopHub serves as an enterprise-ready template and educational blueprint demonstrating real-world backend and full-stack patterns: Generic Repository & Unit of Work (with transaction safety), Service-Layer Business Isolation, Data Transfer Objects (DTOs), AutoMapper, In-Memory Caching, Session-based Shopping Cart with Guest Migration, AJAX-driven filtering/pagination with History API synchronization, and an AdminLTE-powered management portal.
 
 ---
 
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
-- [Features](#-features)
+- [Architecture & Solution Structure](#-architecture--solution-structure)
 - [Tech Stack](#-tech-stack)
-- [Architecture](#-architecture)
+- [Key Features](#-key-features)
+  - [1. Customer Storefront & Catalog](#1-customer-storefront--catalog)
+  - [2. Shopping Cart & Guest Migration](#2-shopping-cart--guest-migration)
+  - [3. Category Management & Caching](#3-category-management--caching)
+  - [4. Product Management & Image Uploads](#4-product-management--image-uploads)
+  - [5. User & Role Administration](#5-user--role-administration)
+  - [6. Authentication & Security](#6-authentication--security)
 - [Getting Started](#-getting-started)
-  - [Clone the Repository](#1-clone-the-repository)
-  - [Configure the Database](#2-configure-the-database)
-  - [Apply Database Migrations](#3-apply-database-migrations)
-  - [Run the Application](#4-run-the-application)
-- [Database](#-database)
-- [Authentication & Authorization](#-authentication--authorization)
-- [Default Admin Account](#-default-admin-account)
-- [Application Modules](#-application-modules)
+  - [Prerequisites](#prerequisites)
+  - [1. Clone Repository](#1-clone-repository)
+  - [2. Database Configuration](#2-database-configuration)
+  - [3. Run Migrations & Seed Data](#3-run-migrations--seed-data)
+  - [4. Launch Application](#4-launch-application)
+- [Default Seeded Accounts & Data](#-default-seeded-accounts--data)
+- [Application Routing & Endpoints](#-application-routing--endpoints)
+- [Design Patterns & Engineering Practices](#-design-patterns--engineering-practices)
 - [Troubleshooting](#-troubleshooting)
-- [Future Extensions](#-future-extensions)
+- [Project Screenshots](#-project-screenshots)
+- [Roadmap & Future Extensions](#-roadmap--future-extensions)
 
 ---
 
 ## 📖 Overview
 
-**ShopHub Startup Template** is an educational ASP.NET Core MVC project intended to serve as a starting point for E-Commerce applications.
+**ShopHub** is organized into three decoupled layers to enforce separation of concerns, testability, and maintainability:
 
-The project separates responsibilities across multiple layers:
-
-- **Web Layer** — MVC controllers, views, view models, authentication, authorization, and application configuration.
-- **BLL Layer** — Business logic, DTOs, AutoMapper profiles, and application services.
-- **DAL Layer** — Entity Framework Core, database context, models, migrations, repositories, and Unit of Work.
-
-The template can be extended with additional E-Commerce functionality such as shopping carts, orders, payments, reviews, wishlists, and analytics.
+- **`myshop.Web` (Presentation Layer)**: ASP.NET Core MVC controllers, Razor views, view models, cookie authentication, session state management, AdminLTE dashboard, and client-side scripts.
+- **`myshop.BLL` (Business Logic Layer)**: Service implementations, business validation, DTO contracts, AutoMapper configuration profiles, and caching policies.
+- **`myshop.DAL` (Data Access Layer)**: Entity Framework Core `ApplicationDbContext`, database entities, EF Core migrations, Generic Repositories, and the Unit of Work pattern with transaction boundaries.
 
 ---
 
-## ✨ Features
+## 🏗 Architecture & Solution Structure
 
-### Product Management
+```text
+ShopHub-Startup-Template/
+├── myshop.sln
+│
+├── myshop.Web/                             # Presentation Layer (MVC & UI)
+│   ├── Areas/
+│   │   └── Admin/                         # Admin Management Area
+│   │       ├── Controllers/               # CategoryController, ProductController, UserController
+│   │       └── Views/                     # AdminLTE Razor views (Category, Product, User)
+│   ├── Controllers/                       # AccountController, CartController, HomeController, ProductController
+│   ├── Mapping/                           # WebMappingProfile (ViewModel <-> DTO)
+│   ├── Seed/                              # InitialDataSeeder (Roles, Users, Categories, Products)
+│   ├── Services/                          # LocalFileService, CartService (Session-backed)
+│   ├── ViewModels/                        # Account (Login, Register), Product (Index, Edit, Create)
+│   ├── Views/                             # Storefront Views (Home, Product, Cart, Account, Shared)
+│   ├── wwwroot/                           # CSS, JS (products.js, category.js, users.js, cart.js), uploads
+│   └── Program.cs                         # Application startup, DI container, middleware pipeline
+│
+├── myshop.BLL/                             # Business Logic Layer
+│   ├── DTOs/
+│   │   ├── Account/                       # LoginDto, RegisterDto
+│   │   ├── Cart/                          # CartItem
+│   │   ├── Category/                      # CategoryListDto, CreateCategoryDto, UpdateCategoryDto
+│   │   ├── Common/                        # PagedResultDto<T>
+│   │   ├── Product/                       # ProductListDto, CreateProductDto, UpdateProductDto
+│   │   └── User/                          # UserManagementDto
+│   ├── Mapping/                           # MappingProfile (Entity <-> DTO)
+│   └── Services/                          # IProductService, ICategoryService, ICartService, etc.
+│
+└── myshop.DAL/                             # Data Access Layer
+    ├── Data/                              # ApplicationDbContext (IdentityDbContext<ApplicationUser, IdentityRole<int>, int>)
+    ├── Migrations/                        # Entity Framework Core Migrations
+    ├── Models/                            # ApplicationUser, Category, Product, ShoppingCart, OrderHeader, OrderDetail
+    └── Repositories/                      # GenericRepository<T>, UnitOfWork (Transaction-managed)
+```
 
-- Create products
-- View products
-- Edit products
-- Delete products
-- Upload product images
-- Product/category relationships
-- Server-side validation
-- Pagination support
-
-### Category Management
-
-- Create categories
-- View categories
-- Edit categories
-- Delete categories
-
-### Authentication
-
-- User registration
-- User login
-- User logout
-- Email confirmation support
-- Authentication using ASP.NET Core Identity
-- Cookie-based authentication
-- Access denied handling
-
-### Authorization
-
-- Role-based authorization
-- `Admin` role
-- `Customer` role
-- `AdminOnly` authorization policy
-- Protected administrative endpoints/pages
-
-### User Management
-
-- View users
-- Manage user roles
-- Manage account lockout status
-- User administration through a dedicated service layer
-
-### Database & Persistence
-
-- Entity Framework Core
-- SQL Server
-- EF Core migrations
-- Repository Pattern
-- Unit of Work
-- Automatic migration application on application startup
-
-### Application Infrastructure
-
-- Dependency Injection
-- DTOs
-- AutoMapper
-- Service Layer
-- ViewModels
-- Session support
-- Razor Runtime Compilation
-- TempData notifications
-- File upload support
-
-### UI
-
-- Bootstrap
-- AdminLTE dashboard
-- jQuery
-- DataTables
-- Toastr notifications
-- SweetAlert2
-- Font Awesome
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Presentation (myshop.Web)                       │
+│  Controllers  │  Razor Views  │  ViewModels  │  AdminLTE  │  Sessions  │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Calls DTO-based Services
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                       Business Logic (myshop.BLL)                      │
+│   Services   │   DTOs   │   AutoMapper   │   IMemoryCache Caching      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Coordinates Repositories
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                        Data Access (myshop.DAL)                        │
+│   Generic Repositories   │   Unit of Work   │   EF Core DbContext      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+                                    ▼
+                             ┌──────────────┐
+                             │  SQL Server  │
+                             └──────────────┘
+```
 
 ---
 
 ## 🛠 Tech Stack
 
-| Technology | Purpose |
-|------------|---------|
-| .NET 10 | Application framework |
-| ASP.NET Core MVC | Web application framework |
-| Entity Framework Core 10 | ORM / data access |
-| SQL Server | Relational database |
-| ASP.NET Core Identity | Authentication & authorization |
-| AutoMapper | Object mapping |
-| Bootstrap | UI framework |
-| AdminLTE | Admin dashboard |
-| jQuery | Client-side scripting |
-| DataTables | Interactive tables |
-| Toastr | Notifications |
-| SweetAlert2 | Confirmation dialogs |
-| X.PagedList | Pagination |
-| Razor Runtime Compilation | Runtime Razor view compilation |
+| Component | Technology | Description |
+|-----------|------------|-------------|
+| **Runtime & Language** | .NET 10 / C# 13 | High-performance modern .NET ecosystem |
+| **Framework** | ASP.NET Core MVC | Web application framework with Razor View Engine |
+| **ORM / Data Access** | Entity Framework Core 10 | Object-Relational Mapper targeting SQL Server |
+| **Database** | Microsoft SQL Server | Relational Database Management System |
+| **Identity & Security** | ASP.NET Core Identity | Membership, role-based authorization, cookie auth (`int` PKs) |
+| **Object Mapping** | AutoMapper 16.2.0 | Automated entity-to-DTO and DTO-to-ViewModel transformations |
+| **Caching** | `IMemoryCache` | In-memory caching for high-frequency queries (Categories) |
+| **Session State** | Distributed Memory Cache | Session storage for guest and authenticated shopping carts |
+| **Compilation** | Razor Runtime Compilation | Instant Razor view updates without project rebuilds |
+| **Pagination** | Custom `PagedResultDto<T>` & X.PagedList | Server-side queryable pagination |
+| **Admin Dashboard** | AdminLTE 3 + Bootstrap 5 | Modern, responsive dashboard layout with responsive sidebar |
+| **Interactive Tables** | jQuery DataTables | Client-side/AJAX data tables with sorting, filtering, and paging |
+| **UI Components** | SweetAlert2, Toastr, FontAwesome 6 | Interactive alerts, toast messages, and scalable iconography |
 
 ---
 
-## 🏗 Architecture
+## ✨ Key Features
 
-The project follows a layered architecture:
+### 1. Customer Storefront & Catalog
+- **Live Debounced Search**: Fast product lookup with a 300ms debounce threshold ($\ge 3$ characters with instant fallback on clear).
+- **Dynamic Sorting & Pagination**: Sort by Name (A-Z, Z-A) or Price (Low-High, High-Low) with configurable page sizes (8, 12, 24 products per page).
+- **AJAX Partial Loading**: Seamless browsing without full-page reloads using `_ProductListPartial.cshtml`.
+- **Browser History Synchronization**: Preserves filter/search state in URL parameters (`history.replaceState`) for bookmarkable and shareable search URLs.
+- **Hero Showcase Landing**: Modern hero section displaying featured products with responsive image fallbacks (`/Images/no-image.png`).
 
-```text
-┌──────────────────────────────────────┐
-│              Web Layer               │
-│                                      │
-│ Controllers / Views / ViewModels     │
-│ Authentication / Authorization      │
-│ Application Configuration            │
-└──────────────────┬───────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────┐
-│              BLL Layer               │
-│                                      │
-│ Services / DTOs / AutoMapper         │
-│ Business Logic                       │
-└──────────────────┬───────────────────┘
-                   │
-                   ▼
-┌──────────────────────────────────────┐
-│              DAL Layer               │
-│                                      │
-│ EF Core / DbContext / Repositories   │
-│ Unit of Work / Entities / Migrations │
-└──────────────────┬───────────────────┘
-                   │
-                   ▼
-             ┌────────────┐
-             │ SQL Server │
-             └────────────┘
-````
+### 2. Shopping Cart & Guest Migration
+- **Session-Driven Cart**: Lightweight and decoupled cart state stored via `ICartService` and `ISession`.
+- **Guest-to-User Cart Migration**: Items added by unauthenticated guests (`ShoppingCart_Guest`) are automatically merged into the user's permanent cart (`ShoppingCart_User_{id}`) upon login (`MigrateGuestCart`).
+- **Real-Time AJAX Cart Actions**:
+  - Add to cart with visual notification feedback.
+  - Increase / Decrease quantity dynamically recalculating line-item totals and grand total.
+  - Remove item with interactive SweetAlert2 confirmation.
+  - Clear entire cart with automated empty-state rendering.
+- **CSRF Protected**: Every mutation request enforces `[ValidateAntiForgeryToken]` and token headers.
 
-# 🚀 Getting Started
-Instructions to run this project locally
+### 3. Category Management & Caching
+- **Full CRUD Operations**: Admin area category management (`/Admin/Category`).
+- **In-Memory Caching Strategy**: Categories are cached using `IMemoryCache` with a 30-minute absolute expiration to reduce database round-trips.
+- **Automatic Cache Invalidation**: Create, Update, and Delete operations automatically purge the `categories` cache key to maintain fresh data.
 
-## Prerequisites
+### 4. Product Management & Image Uploads
+- **Product Catalog CRUD**: Admin product management (`/Admin/Product`) with category relationships.
+- **Secure File Handling**: `LocalFileService` manages image uploads under `wwwroot/uploads/products/`.
+  - Allowed extensions: `.jpg`, `.jpeg`, `.png`, `.webp`.
+  - File size validation: Maximum 2 MB per image.
+  - Automatic orphan cleanup: Deletes old physical image files when a product is updated or deleted.
+- **Interactive DataTables**: DataTables integration with server-sourced JSON (`/Admin/Product/GetData`) and AJAX deletion.
 
-Before running the project, make sure you have the following installed:
+### 5. User & Role Administration
+- **User Management Dashboard**: Dedicated administrative view (`/Admin/User`) displaying user details, assigned roles, and lockout states.
+- **Instant Role Modification**: Promote or demote users between `Admin` and `Customer` via AJAX.
+- **Account Lockout Control**: Instantly lock or unlock accounts by setting `LockoutEndDate`.
+- **Self-Protection Guardrails**: Built-in backend safeguards prevent logged-in administrators from changing their own role, locking their own account, or deleting themselves.
 
-* [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
-* SQL Server
-* SQL Server Management Studio (SSMS) — recommended
-* Git
-* Visual Studio 2022/2026 or another .NET-compatible IDE
-
-You can verify your .NET installation with:
-
-```bash
-dotnet --version
-```
-
-The project targets:
-
-```text
-net10.0
-```
+### 6. Authentication & Security
+- **Identity with Integer Keys**: Configured with `ApplicationUser` and `IdentityRole<int>` for optimal relational indexing.
+- **Account Lockout Policy**: Configured to lock accounts for 10 minutes after 5 consecutive failed login attempts.
+- **Cookie Authentication**: Explicit paths configured for `/Account/Login` and `/Account/AccessDenied`.
+- **Role-Based Authorization Policy**: `AdminOnly` policy requiring authentication and the `Admin` role (`[Authorize(Policy = "AdminOnly")]`).
 
 ---
 
-## 1. Clone the Repository
+## 🚀 Getting Started
 
-Clone the repository and switch to the development branch:
+### Prerequisites
+Ensure the following tools are installed:
+- [.NET 10.0 SDK](https://dotnet.microsoft.com/download/dotnet/10.0) (verify with `dotnet --version`)
+- **SQL Server** (LocalDB, Express, or Full instance)
+- **SQL Server Management Studio (SSMS)** or **Azure Data Studio** (optional)
+- **Visual Studio 2022 / 2026** or **VS Code** with C# Dev Kit
+
+---
+
+### 1. Clone Repository
 
 ```bash
 git clone https://github.com/Abdo-H-Etman/ShopHub-Startup-Template.git
 cd ShopHub-Startup-Template
-git checkout develop
 ```
 
 ---
 
-## 2. Configure the Database
+### 2. Database Configuration
 
-The application uses SQL Server and reads the connection string using:
+The application reads the connection string `DefaultConnection` from `appsettings.json` or `appsettings.Development.json`.
 
-```csharp
-builder.Configuration.GetConnectionString("DefaultConnection")
-```
-
-Create or update the following configuration:
+Update `myshop.Web/appsettings.Development.json`:
 
 ```json
 {
@@ -231,366 +207,223 @@ Create or update the following configuration:
 }
 ```
 
-### SQL Server Authentication
-
-If your SQL Server instance uses SQL Server Authentication:
-
+*If using SQL Server Authentication:*
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.\\SQLEXPRESS;Database=myshopDb;User Id=YOUR_USERNAME;Password=YOUR_PASSWORD;TrustServerCertificate=True"
+    "DefaultConnection": "Server=.\\SQLEXPRESS;Database=myshopDb;User Id=YOUR_USER;Password=YOUR_PASSWORD;TrustServerCertificate=True"
   }
 }
 ```
 
-> **Important:** Never commit real database credentials, passwords, API keys, or other secrets to source control.
-
-For local development, prefer using:
-
-* `appsettings.Development.json` with safe local credentials
-* User Secrets
-* Environment variables
+> **Security Note:** Never commit production database credentials or sensitive secrets to version control. Use .NET User Secrets (`dotnet user-secrets`) or environment variables in production.
 
 ---
 
-## 3. Apply Database Migrations
+### 3. Run Migrations & Seed Data
 
-The repository contains Entity Framework Core migrations.
-
-From the solution directory, run:
-
-```bash
-dotnet ef database update
-```
-
-If the EF CLI tool is not installed:
-
-```bash
-dotnet tool install --global dotnet-ef
-```
-
-Then run:
-
-```bash
-dotnet ef database update
-```
-
-You can also apply migrations from Visual Studio Package Manager Console:
-
-```powershell
-Update-Database
-```
-
-### Automatic Migration
-
-The application also applies pending migrations during startup:
+The application includes automatic migration and data seeding on startup:
 
 ```csharp
-db.Database.Migrate();
+// Program.cs
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<InitialDataSeeder>();
+    await seeder.SeedAsync();
+}
 ```
 
-Therefore, when the application starts, pending migrations are automatically applied to the configured database.
+If you prefer applying migrations manually via the CLI:
+
+```bash
+# Install EF tool if not already present
+dotnet tool install --global dotnet-ef
+
+# Apply migrations
+dotnet ef database update --project myshop.DAL --startup-project myshop.Web
+```
 
 ---
 
-## 4. Run the Application
+### 4. Launch Application
 
-From the solution directory:
+Run the application using the .NET CLI:
 
 ```bash
 dotnet run --project myshop.Web
 ```
 
-Or open:
-
-```text
-myshop.sln
-```
-
-in Visual Studio and run the `myshop.Web` project.
-
-The application will display the HTTPS/HTTP URL in the console.
-
-The default app route currently starts at:
-
-```text
-/Account/Login
-```
+Navigate to the displayed local HTTPS address (e.g., `https://localhost:7001` or `http://localhost:5000`).
 
 ---
 
-# 🗄 Database
+## 👤 Default Seeded Accounts & Data
 
-The application uses **SQL Server** with **Entity Framework Core** for data persistence.
+When the database is initialized, `InitialDataSeeder` automatically populates default roles, administrative accounts, customer test users, categories, and products:
 
-The database schema is managed through **EF Core migrations**, while initial development data is created automatically through the application's data seeder.
+### Seeded User Accounts
 
+| Username | Email | Password | Role | Description |
+|----------|-------|----------|------|-------------|
+| `admin` | `admin@myshop.com` | `Admin@123` | **Admin** | Full administrative privileges (Dashboard, Products, Categories, Users) |
+| `user1` | `user1@myshop.com` | `User@123` | **Customer** | Standard customer test account |
+| `user2` | `user2@myshop.com` | `User@123` | **Customer** | Standard customer test account |
 
-The `ApplicationDbContext` inherits from:
+> ⚠️ **Warning:** The seeded passwords are for development and testing only. Change default credentials prior to deploying to any production environment.
+
+### Seeded Categories & Sample Products
+- **Categories**: `Electronics`, `Books`, `Clothing`, `Home & Kitchen`
+- **Products**: Smartphone ($699.99), Laptop ($1,299.99), Barca-Shirt ($14.99) with sample images.
+
+---
+
+## 🛣 Application Routing & Endpoints
+
+### Storefront & Customer Routes
+| Route / URL | Controller | Action | Description |
+|-------------|------------|--------|-------------|
+| `/` or `/Home/Index` | `HomeController` | `Index` | Storefront landing page & featured items |
+| `/Product/Index` | `ProductController` | `Index` | Product catalog with live search, sorting, and pagination |
+| `/Cart/Index` | `CartController` | `Index` | Shopping cart overview |
+| `/Cart/Add` | `CartController` | `Add` (POST) | Add product item to cart |
+| `/Cart/Increase` | `CartController` | `Increase` (POST) | Increment quantity (AJAX-supported) |
+| `/Cart/Decrease` | `CartController` | `Decrease` (POST) | Decrement quantity (AJAX-supported) |
+| `/Cart/Remove` | `CartController` | `Remove` (POST) | Remove item from cart (AJAX-supported) |
+| `/Cart/Clear` | `CartController` | `Clear` (POST) | Remove all items from cart |
+
+### Account & Authentication Routes
+| Route / URL | Controller | Action | Description |
+|-------------|------------|--------|-------------|
+| `/Account/Login` | `AccountController` | `Login` (GET/POST) | User authentication & guest cart migration |
+| `/Account/Register` | `AccountController` | `Register` (GET/POST) | New customer account registration |
+| `/Account/Logout` | `AccountController` | `Logout` (POST) | Sign out and clear active session |
+| `/Account/AccessDenied` | `AccountController` | `AccessDenied` | Unauthorized access landing page |
+
+### Admin Area Routes (`[Area("Admin")]`, `[Authorize(Policy = "AdminOnly")]`)
+| Route / URL | Controller | Action | Description |
+|-------------|------------|--------|-------------|
+| `/Admin/Category` | `CategoryController` | `Index` | Category listing with DataTables |
+| `/Admin/Category/Create` | `CategoryController` | `Create` (GET/POST) | Create a new category |
+| `/Admin/Category/Edit/{id}` | `CategoryController` | `Edit` (GET/POST) | Update an existing category |
+| `/Admin/Category/DeleteAjax` | `CategoryController` | `DeleteAjax` (DELETE) | AJAX category deletion |
+| `/Admin/Product` | `ProductController` | `Index` | Product management data table |
+| `/Admin/Product/GetData` | `ProductController` | `GetData` (GET) | JSON endpoint for DataTables |
+| `/Admin/Product/Create` | `ProductController` | `Create` (GET/POST) | Create product with image upload |
+| `/Admin/Product/Edit/{id}` | `ProductController` | `Edit` (GET/POST) | Update product details & image replacement |
+| `/Admin/Product/DeleteAjax` | `ProductController` | `DeleteAjax` (DELETE) | AJAX product deletion with file cleanup |
+| `/Admin/User` | `UserController` | `Index` | User administration portal |
+| `/Admin/User/GetData` | `UserController` | `GetData` (GET) | JSON endpoint for user table |
+| `/Admin/User/ChangeRole` | `UserController` | `ChangeRole` (POST) | Switch user role (`Admin` / `Customer`) |
+| `/Admin/User/Lock` | `UserController` | `Lock` (POST) | Lock user account |
+| `/Admin/User/Unlock` | `UserController` | `Unlock` (POST) | Unlock user account |
+| `/Admin/User/DeleteAjax` | `UserController` | `DeleteAjax` (DELETE) | Delete user account |
+
+---
+
+## 🧩 Design Patterns & Engineering Practices
+
+### 1. Generic Repository Pattern (`IGenericRepository<T>`)
+Data access operations are abstracted behind a generic repository interface providing type-safe querying, projection, include navigation, and pagination:
 
 ```csharp
-IdentityDbContext<ApplicationUser, IdentityRole<int>, int>
+Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? include = null);
+Task<T?> GetByIdAsync(int id);
+Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? include = null);
+Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
+    int pageNumber,
+    int pageSize,
+    Expression<Func<T, bool>>? predicate = null,
+    Func<IQueryable<T>, IQueryable<T>>? include = null,
+    Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null);
 ```
 
-The application contains Identity tables in addition to application-specific tables such as:
-
-```text
-Users
-Categories
-Products
-AspNetRoles
-AspNetUserRoles
-AspNetUserClaims
-AspNetUserLogins
-AspNetUserTokens
-AspNetRoleClaims
-AspNetUserTokens
-```
-
-> The actual Identity table structure is generated and maintained through Entity Framework Core migrations.
-
-
-# 🔐 Authentication & Authorization
-
-ASP.NET Core Identity is used for authentication and authorization.
-
-The application uses:
+### 2. Unit of Work with Transaction Handling (`IUnitOfWork`)
+Coordinates multiple entity repositories and encapsulates `SaveChangesAsync()` within an explicit transaction boundary with automatic rollback on error:
 
 ```csharp
-ApplicationUser
-IdentityRole<int>
+public async Task<int> SaveChangesAsync()
+{
+    if (_context.Database.CurrentTransaction is not null)
+        return await _context.SaveChangesAsync();
+
+    using var transaction = await _context.Database.BeginTransactionAsync();
+    try
+    {
+        var result = await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+        return result;
+    }
+    catch
+    {
+        await transaction.RollbackAsync();
+        throw;
+    }
+}
 ```
 
-Authentication is configured using Identity and Entity Framework Core.
+### 3. Layered Service Abstraction
+Controllers remain lean and free of database logic. All business rules, caching, file manipulations, and transactions are encapsulated within dedicated services (`ProductService`, `CategoryService`, `UserManagementService`, `AccountService`, `CartService`).
 
-The application also configures:
-
-```text
-Login Path: /Account/Login
-Access Denied Path: /Account/AccessDenied
-```
-
-## Roles
-
-Two roles are currently seeded:
-
-```text
-Admin
-Customer
-```
-
-## Admin Authorization Policy
-
-An `AdminOnly` policy is configured for authenticated users who belong to the `Admin` role.
-
-Example:
-
-```csharp
-[Authorize(Policy = "AdminOnly")]
-```
-
-You can use this policy to protect administrative functionality.
+### 4. DTO Pattern & AutoMapper
+Database entities never leak directly to the client views. Dedicated DTOs represent business contracts, while ViewModels represent UI contracts. AutoMapper profiles handle object-to-object mapping cleanly across boundaries.
 
 ---
 
-# 👤 Default Admin Account
+## 🔧 Troubleshooting
 
-The application automatically creates an initial administrator when the database is initialized.
+### Database Connection Failure
+- Verify that SQL Server / SQLEXPRESS is actively running in Windows Services (`services.msc`).
+- Confirm that `TrustServerCertificate=True` is present in your connection string for local development certificates.
+- Check that the database user credentials have `db_owner` or `CREATE DATABASE` permissions.
 
-The current development seeder creates:
-
-```text
-Username: admin
-Email: admin@myshop.com
-Role: Admin
-```
-
-The current seeded development password is:
-
-```text
-Admin@123
-```
-
-> **Security Warning:** Change this password before using the application in any real or production environment I did that only for testing.
-
-The seeder also creates the following roles if they do not already exist:
-
-```text
-Admin
-Customer
-```
-
-The application executes the seeder during startup after applying pending migrations.
-
----
-
-# 📦 Application Modules
-
-## Category Management
-
-The category module supports:
-
-* Create
-* Read
-* Update
-* Delete
-
-Categories are used as part of the product management functionality.
-
----
-
-## Product Management
-
-The product module supports:
-
-* Create products
-* View products
-* Edit products
-* Delete products
-* Product image uploads
-* Category assignment
-* Pagination
-
----
-
-## Account Management
-
-The account functionality includes:
-
-* Registration
-* Login
-* Logout
-* Authentication
-* Email confirmation handling
-* Access denied handling
-* Account-related validation
-
----
-
-## User Management
-
-Administrative users can manage application users through the user management functionality.
-
-The implementation uses:
-
-```text
-IUserManagementService
-UserManagementService
-```
-
-The service layer keeps user-management business logic outside the MVC controllers.
-
----
-
-# 🧩 Design Patterns & Practices
-
-The project demonstrates several commonly used ASP.NET Core development practices.
-
-### Repository Pattern
-
-Data access is abstracted through repositories.
-
-```text
-IGenericRepository<T>
-GenericRepository<T>
-```
-
-### Unit of Work
-
-Multiple repositories can be coordinated through:
-
-```text
-IUnitOfWork
-UnitOfWork
-```
-
-### Service Layer
-
-Business logic is separated from controllers through services such as:
-
-```text
-IProductService
-ICategoryService
-IAccountService
-IUserManagementService
-```
-
-### DTOs
-
-DTOs are used to separate business/application data contracts from persistence entities.
-
-DTOs are organized under:
-
-```text
-myshop.BLL/DTOs/
-```
-
-### AutoMapper
-
-AutoMapper is used to map between:
-
-```text
-Entities
-DTOs
-ViewModels
-```
-
----
-
-# 🔧 Troubleshooting
-
-## Database Connection Error
-
-If the application cannot connect to SQL Server:
-
-1. Make sure SQL Server is running.
-2. Verify the SQL Server instance name.
-3. Check the `DefaultConnection` connection string.
-4. Verify SQL Server authentication credentials if using SQL authentication.
-5. Make sure `TrustServerCertificate=True` is configured for local development if required.
-
----
-
-## Migration Command Not Found
-
-Install the EF Core CLI:
-
+### Missing `dotnet ef` Tool
+Install or update the global EF CLI tool:
 ```bash
 dotnet tool install --global dotnet-ef
-```
-
-Then verify:
-
-```bash
 dotnet ef --version
 ```
 
----
-
-# 📷 Images
-* [Drive Link](https://drive.google.com/drive/folders/1MSif-Ar1ScIr6ptgS1DFipIAGeIPWQxs?usp=drive_link)
-
-# 🚧 Future Extensions
-
-The project can be extended with additional E-Commerce functionality, including:
-
-* [ ] Shopping Cart
-* [ ] Orders
-* [ ] Order Items
-* [ ] Checkout
-* [ ] Payment Integration
-* [ ] Product Reviews
-* [ ] Wishlist
-* [ ] Inventory Management
-* [ ] Dashboard Analytics
-* [ ] Product Search
-* [ ] Advanced Filtering
-* [ ] Email Notifications
-* [ ] Password Reset
-* [ ] External Authentication
-* [ ] API Layer
-* [ ] Automated Tests
-* [ ] Docker Support
-* [ ] CI/CD Pipeline
+### Image Upload Issues
+- Ensure `wwwroot/uploads/products/` has write permissions.
+- Validate that the uploaded image format is `.jpg`, `.jpeg`, `.png`, or `.webp` and size does not exceed 2 MB.
 
 ---
+
+## 📷 Project Screenshots
+
+Screenshots, demos, and assets can be referenced in the repository media resources:
+* [Project Images & Assets Drive Link](https://drive.google.com/drive/folders/1MSif-Ar1ScIr6ptgS1DFipIAGeIPWQxs?usp=drive_link)
+
+---
+
+## 🚧 Roadmap & Future Extensions
+
+- [x] Layered 3-Tier Architecture (.NET 10)
+- [x] ASP.NET Core Identity (`int` Keys & Role Management)
+- [x] Product & Category Full CRUD with AdminLTE
+- [x] Product Image Uploads & File Cleanup (`IFileService`)
+- [x] In-Memory Caching for High-Frequency Queries (`IMemoryCache`)
+- [x] User Management (Role Promotion, Account Lockout, Self-Protection Guards)
+- [x] Session-Based Shopping Cart (`ICartService`)
+- [x] Guest-to-User Cart Migration on Login
+- [x] Storefront Debounced Live Search, Sorting & AJAX Pagination
+- [x] Interactive SweetAlert2 & Toastr Client Feedback
+- [ ] Checkout & Order Placement Flow
+- [ ] Stripe Payment Gateway Integration (`Stripe.net`)
+- [ ] Order Management & Tracking (`OrderHeader` / `OrderDetail`)
+- [ ] Product Reviews and Customer Ratings
+- [ ] Customer Wishlist
+- [ ] Email Notifications (Order Confirmation, Password Reset via SMTP / SendGrid)
+- [ ] RESTful API Endpoints with Swagger / OpenAPI
+- [ ] Automated Unit & Integration Tests (xUnit, Moq, Testcontainers)
+- [ ] Docker & Containerization Support
+- [ ] CI/CD Pipeline via GitHub Actions
+
+---
+
+## 📄 License
+
+This project is licensed under the terms of the MIT license.
