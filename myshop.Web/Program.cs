@@ -43,6 +43,8 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddHttpContextAccessor();
 
+builder.Services.AddMemoryCache();
+
 builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
