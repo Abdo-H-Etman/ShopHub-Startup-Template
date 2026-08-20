@@ -1,6 +1,8 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using myshop.BLL.DTOs.Common;
 using myshop.BLL.DTOs.Product;
 using myshop.Entities.Models;
 using Repositories.Interfaces;
@@ -26,6 +28,44 @@ public class ProductService : IProductService
         return _mapper.Map<IEnumerable<ProductListDto>>(products);
     }
 
+    public async Task<PagedResultDto<ProductListDto>> GetPagedAsync(int pageNumber, int pageSize, string? search, string? sort)
+    {
+        pageNumber = Math.Max(pageNumber, 1);
+        pageSize = Math.Clamp(pageSize, 1, 50);
+
+        search = search?.Trim();
+
+        Expression<Func<Product, bool>>? predicate = null;
+
+        if (!string.IsNullOrEmpty(search))
+        {
+            predicate = p => p.Name.Contains(search) || p.Description.Contains(search);
+        }
+
+        Func<IQueryable<Product>, IOrderedQueryable<Product>> orderBy =
+            sort?.ToLower() switch
+            {
+                "namedesc" => q => q.OrderByDescending(p => p.Name),
+
+                "priceasc" => q => q.OrderBy(p => p.Price),
+
+                "pricedesc" => q => q.OrderByDescending(p => p.Price),
+
+                _ => q => q.OrderBy(p => p.Name)
+            };
+
+        var (items, totalCount) = await _unitOfWork.Products.GetPagedAsync(pageNumber, pageSize, predicate, q => q.Include(p => p.Category), orderBy);
+
+        var result = new PagedResultDto<ProductListDto>
+        {
+            Items = _mapper.Map<IEnumerable<ProductListDto>>(items),
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = totalCount
+        };
+
+        return result;
+    }
     public async Task<ProductListDto?> GetByIdAsync(int id)
     {
         var product = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == id, q => q.Include(x => x.Category));

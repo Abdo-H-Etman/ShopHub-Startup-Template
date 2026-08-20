@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using myshop.BLL.Services;
+using myshop.Entities.ViewModels;
 
 namespace myshop.Web.Controllers;
 
@@ -15,10 +16,32 @@ public class ProductController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(
+    int pageNumber = 1,
+    int pageSize = 8,
+    string? search = null,
+    string? sort = "nameasc")
     {
-        var products = await _productService.GetAllAsync();
+        var result = await _productService.GetPagedAsync(
+            pageNumber,
+            pageSize,
+            search,
+            sort);
 
-        return View(products);
+        var vm = new ProductIndexVM
+        {
+            Products = result.Items,
+            PageNumber = pageNumber,
+            PageSize = pageSize,
+            TotalCount = result.TotalCount,
+            Search = search,
+            Sort = sort
+        };
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Query.ContainsKey("ajax"))
+        {
+            return PartialView("_ProductListPartial", vm);
+        }
+
+        return View(vm);
     }
 }
