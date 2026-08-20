@@ -1,0 +1,63 @@
+@using myshop.Entities.ViewModels;
+@model ProductIndexVM
+
+@if (Model.TotalPages > 1)
+{
+    <nav aria-label="Product pagination">
+
+        <ul class="pagination justify-content-center mt-5">
+
+            <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-controller="Product"
+                   asp-action="Index"
+                   asp-route-pageNumber="@(Model.PageNumber - 1)"
+                   asp-route-pageSize="@Model.PageSize"
+                   asp-route-search="@Model.Search"
+                   asp-route-sort="@Model.Sort">
+
+                    Previous
+
+                </a>
+
+            </li>
+
+            @for (var pageNum = 1; pageNum <= Model.TotalPages; pageNum++)
+            {
+                <li class="page-item @(pageNum == Model.PageNumber ? "active" : "")">
+
+                    <a class="page-link"
+                       asp-controller="Product"
+                       asp-action="Index"
+                       asp-route-pageNumber="@pageNum"
+                       asp-route-pageSize="@Model.PageSize"
+                       asp-route-search="@Model.Search"
+                       asp-route-sort="@Model.Sort">
+
+                        @pageNum
+                    </a>
+
+                </li>
+            }
+
+            <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+
+                <a class="page-link"
+                   asp-controller="Product"
+                   asp-action="Index"
+                   asp-route-pageNumber="@(Model.PageNumber + 1)"
+                   asp-route-pageSize="@Model.PageSize"
+                   asp-route-search="@Model.Search"
+                   asp-route-sort="@Model.Sort">
+
+                    Next
+
+                </a>
+
+            </li>
+
+        </ul>
+
+    </nav>
+}
