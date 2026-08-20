@@ -137,20 +137,56 @@ public class InitialDataSeeder
         {
             var smartPhoneImg = await _fileService.CopyFileAsync("Images/Products/5f4d61ba-5f02-4a22-8305-1148a341710f.jpg");
 
+            var IPhoneImg = await _fileService.CopyFileAsync("Images/Products/e6c4961b-1c83-4da0-bf6d-f6c4901fb9b9.jpeg");
+
             var laptopImg = await _fileService.CopyFileAsync("Images/Products/42af8ba8-65df-417b-908c-ffb6cfcdfc0c.jpg");
 
+            var mouseImg = await _fileService.CopyFileAsync("Images/Products/927524ce-cf58-4eea-9e36-d29b9edc539a.jpg");
+
             var barcaShirtImg = await _fileService.CopyFileAsync("Images/Products/eb1e8683-8559-4957-92c0-773fd02e4c7c.jpg");
+
+            var screenImg = await _fileService.CopyFileAsync("Images/Products/02a7ea31-1096-4acc-99ad-d708a75c6688.jpg");
+
+            var airConditionerImg = await _fileService.CopyFileAsync("Images/Products/035afc1e-b77f-4b5b-9eb7-7d7991bea349.jpg");
+
+            var ShoesImg = await _fileService.CopyFileAsync("Images/Products/c9b42c4c-1c2e-47c8-b2e6-e46551e0a34f.jpg");
+
+            var RealShirtImg = await _fileService.CopyFileAsync("Images/Products/d5033c93-add3-40bc-85f5-020363626720.jpg");
+
+            var categories = await _categoryService.GetAllAsync();
+
+            var electronicsId = categories.FirstOrDefault(c => c.Name == "Electronics")!.Id;
+
+            var clothingId = categories.FirstOrDefault(c => c.Name == "Clothing")!.Id;
 
             var defaultProducts = new List<CreateProductDto>
             {
                 new CreateProductDto { Name = "Smartphone", Description = "Latest model smartphone", Price = 699.99m,
-                                CategoryId = 1002,
+                                CategoryId = electronicsId,
                                 Img = smartPhoneImg },
+                new CreateProductDto { Name = "Iphone 15 Pro Max", Description = "Flagship smartphone", Price = 1299.99m,
+                                CategoryId = electronicsId,
+                                Img = IPhoneImg },
                 new CreateProductDto { Name = "Laptop", Description = "High performance laptop", Price = 1299.99m,
-                                CategoryId = 1002,
+                                CategoryId = electronicsId,
                                 Img = laptopImg },
+                new CreateProductDto { Name = "Wireless Mouse", Description = "High quality wireless mouse", Price = 1299.99m,
+                                CategoryId = electronicsId,
+                                Img = mouseImg },
+                new CreateProductDto { Name = "Screen", Description = "High quality screen", Price = 1199.99m,
+                                CategoryId = electronicsId,
+                                Img = screenImg },
+                new CreateProductDto { Name = "Shoes", Description = "premium quality shoes", Price = 999.99m,
+                                CategoryId = electronicsId,
+                                Img = ShoesImg },
+                new CreateProductDto { Name = "Air Conditioner", Description = "Air conditioner Sharp model", Price = 2199.99m,
+                                CategoryId = electronicsId,
+                                Img = airConditionerImg },
+                new CreateProductDto { Name = "Real madrid Shirt", Description = "Comfortable cotton Sports shirt", Price = 15.99m,
+                                CategoryId = clothingId,
+                                Img = RealShirtImg },
                 new CreateProductDto { Name = "Barca-Shirt", Description = "Comfortable cotton Sports shirt", Price = 14.99m,
-                                CategoryId = 1004,
+                                CategoryId = clothingId,
                                 Img = barcaShirtImg }
             };
 
