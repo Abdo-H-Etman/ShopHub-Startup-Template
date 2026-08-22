@@ -189,6 +189,7 @@ Ensure the following tools are installed:
 ```bash
 git clone https://github.com/Abdo-H-Etman/ShopHub-Startup-Template.git
 cd ShopHub-Startup-Template
+git checkout develop
 ```
 
 ---
