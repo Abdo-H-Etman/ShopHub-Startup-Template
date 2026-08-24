@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using myshop.BLL.DTOs.Common;
 using myshop.BLL.DTOs.Product;
@@ -7,10 +9,12 @@ namespace myshop.BLL.Services;
 public interface IProductService
 {
     Task<IEnumerable<ProductListDto>> GetAllAsync();
+    Task<IEnumerable<ProductListDto>> GetArchivedAsync();
     Task<PagedResultDto<ProductListDto>> GetPagedAsync(int pageNumber, int pageSize, string? search, string? sort);
     Task<ProductListDto?> GetByIdAsync(int id);
     Task<UpdateProductDto?> GetByIdForUpdateAsync(int id);
     Task CreateAsync(CreateProductDto dto, IFormFile? file);
     Task UpdateAsync(int id, UpdateProductDto dto, IFormFile? file);
     Task DeleteAsync(int id);
+    Task RestoreAsync(int id);
 }
