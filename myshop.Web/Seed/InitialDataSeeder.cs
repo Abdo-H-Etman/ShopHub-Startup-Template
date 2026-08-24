@@ -149,7 +149,7 @@ public class InitialDataSeeder
 
             var airConditionerImg = await _fileService.CopyFileAsync("Images/Products/035afc1e-b77f-4b5b-9eb7-7d7991bea349.jpg");
 
-            var ShoesImg = await _fileService.CopyFileAsync("Images/Products/c9b42c4c-1c2e-47c8-b2e6-e46551e0a34f.jpg");
+            var ShoesImg = await _fileService.CopyFileAsync("Images/Products/79e1b43f-7bc5-4019-9d0c-409a0275d0b9.jpg");
 
             var RealShirtImg = await _fileService.CopyFileAsync("Images/Products/d5033c93-add3-40bc-85f5-020363626720.jpg");
 
