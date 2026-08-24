@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using myshop.BLL.DTOs.Account;
+using myshop.BLL.Interfaces;
 using myshop.Entities.Models;
 
 namespace myshop.BLL.Services;
@@ -8,11 +9,16 @@ public class AccountService : IAccountService
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly SignInManager<ApplicationUser> _signInManager;
+    private readonly IEmailService _emailService;
 
-    public AccountService(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+    public AccountService(
+        UserManager<ApplicationUser> userManager,
+        SignInManager<ApplicationUser> signInManager,
+        IEmailService emailService)
     {
         _userManager = userManager;
         _signInManager = signInManager;
+        _emailService = emailService;
     }
 
     public async Task<IdentityResult> RegisterAsync(RegisterDto dto)
@@ -30,6 +36,11 @@ public class AccountService : IAccountService
             return result;
 
         await _userManager.AddToRoleAsync(user, "Customer");
+
+        if (!string.IsNullOrEmpty(dto.Email))
+        {
+            await _emailService.SendWelcomeEmailAsync(dto.Email, dto.Name);
+        }
 
         return result;
     }
