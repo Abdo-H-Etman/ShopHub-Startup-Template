@@ -70,6 +70,19 @@
         border: 1px solid #e2e8f0;
     }
 
+    .payment-loading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    @* .payment-loading.hidden {
+        display: none;
+    } *@
+
     .payment-badge {
         background: #ecfdf5;
         color: #059669;
@@ -121,7 +134,7 @@
         <p class="text-muted">Complete your delivery information and confirm your simulated order.</p>
     </div>
 
-    <form asp-action="Checkout" method="post">
+    <form id="payment-form">
         @Html.AntiForgeryToken()
 
         <div class="row g-4">
@@ -156,7 +169,8 @@
 
                         <div class="col-12">
                             <label asp-for="Address" class="form-label fw-semibold"></label>
-                            <input asp-for="Address" class="form-control" placeholder="Street address, apartment, suite" />
+                            <input asp-for="Address" class="form-control"
+                                   placeholder="Street address, apartment, suite" />
                             <span asp-validation-for="Address" class="text-danger small"></span>
                         </div>
 
@@ -176,47 +190,67 @@
 
                 <!-- 2. Payment Simulation -->
                 <div class="checkout-card">
+
                     <div class="checkout-card-header">
+
                         <i class="fa-solid fa-credit-card"></i>
+
                         <div class="flex-grow-1">
+
                             <div class="d-flex justify-content-between align-items-center">
+
                                 <h4>2. Payment Details</h4>
+
                                 <span class="payment-badge">
-                                    <i class="fa-solid fa-shield-halved"></i> Simulated Sandbox
+
+                                    <i class="fa-solid fa-shield-halved"></i>
+
+                                    Stripe Sandbox
+
                                 </span>
+
                             </div>
-                            <small class="text-muted">Instant mock authorization (No real charge will occur)</small>
+
+                            <small class="text-muted">
+                                Secure payment powered by Stripe
+                            </small>
+
                         </div>
+
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label asp-for="CardHolderName" class="form-label fw-semibold"></label>
-                            <input asp-for="CardHolderName" class="form-control" placeholder="Cardholder Name" />
-                            <span asp-validation-for="CardHolderName" class="text-danger small"></span>
+
+                    <!-- Payment Element loading state -->
+                    <div id="payment-loading" class="payment-loading">
+
+                        <div class="spinner-border spinner-border-sm" role="status">
                         </div>
 
-                        <div class="col-12">
-                            <label asp-for="CardNumber" class="form-label fw-semibold"></label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-white"><i class="fa-brands fa-cc-visa text-primary"></i></span>
-                                <input asp-for="CardNumber" class="form-control" placeholder="4242 4242 4242 4242" />
-                            </div>
-                            <span asp-validation-for="CardNumber" class="text-danger small"></span>
-                        </div>
+                        <span>
+                            Loading secure payment form...
+                        </span>
 
-                        <div class="col-md-6">
-                            <label asp-for="CardExpiration" class="form-label fw-semibold"></label>
-                            <input asp-for="CardExpiration" class="form-control" placeholder="MM/YY" />
-                            <span asp-validation-for="CardExpiration" class="text-danger small"></span>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label asp-for="CardCvv" class="form-label fw-semibold"></label>
-                            <input asp-for="CardCvv" class="form-control" placeholder="123" />
-                            <span asp-validation-for="CardCvv" class="text-danger small"></span>
-                        </div>
                     </div>
+
+
+                    <!-- Stripe Payment Element -->
+                    <div id="payment-element"></div>
+
+
+                    <!-- Stripe error -->
+                    <div id="payment-errors" class="payment-error" role="alert">
+                    </div>
+
+
+                    <div class="stripe-note">
+
+                        <i class="fa-solid fa-lock me-1"></i>
+
+                        Your payment information is securely processed by Stripe.
+                        ShopHub does not store your card details.
+
+                    </div>
+
                 </div>
 
             </div>
@@ -234,7 +268,8 @@
                         {
                             <div class="summary-item">
                                 <img src="@Url.Content(string.IsNullOrWhiteSpace(item.ImageUrl) ? "~/Images/no-image.png" : "~/" + item.ImageUrl)"
-                                     alt="@item.ProductName" class="summary-item-img" onerror="this.src='/Images/no-image.png';" />
+                                     alt="@item.ProductName" class="summary-item-img"
+                                     onerror="this.src='/Images/no-image.png';" />
                                 <div class="flex-grow-1">
                                     <h6 class="mb-0 fw-semibold">@item.ProductName</h6>
                                     <small class="text-muted">Qty: @item.Quantity × $@item.Price.ToString("N2")</small>
@@ -261,8 +296,15 @@
                         <span class="h4 fw-bold text-primary mb-0">$@Model.OrderTotal.ToString("N2")</span>
                     </div>
 
-                    <button type="submit" class="btn-place-order">
-                        <i class="fa-solid fa-lock me-2"></i> Place Order ($@Model.OrderTotal.ToString("N2"))
+                    <button type="submit" id="submit-payment" class="btn-place-order">
+
+                        <span id="button-text">
+                            <i class="fa-solid fa-lock me-2"></i>
+                            Pay $@Model.OrderTotal.ToString("N2")
+                        </span>
+
+                        <span id="button-spinner" class="spinner-border spinner-border-sm d-none">
+                        </span>
                     </button>
 
                     <div class="text-center mt-3">
@@ -281,6 +323,11 @@
 
 </div>
 
+<div id="stripe-config" data-publishable-key="@ViewBag.StripePublishableKey" style="display: none;">
+</div>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="~/js/checkout.js" asp-append-version="true"></script>
 }
