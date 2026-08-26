@@ -5,15 +5,15 @@
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+
 
 <style>
     .custom-card {
-        background: rgba(255,255,255,.75);
+        background: rgba(255,255,255,.9);
         backdrop-filter: blur(12px);
         border-radius: 18px;
         border: 1px solid rgba(160,173,186,.35);
-        box-shadow: 0 15px 35px rgba(0,0,0,.12);
+        box-shadow: 0 15px 35px rgba(0,0,0,.08);
         padding: 28px;
         animation: fadeIn .4s ease;
     }
@@ -43,12 +43,30 @@
         box-shadow: 0 4px 20px rgba(30,58,138,.35);
     }
 
-    .top-btn {
-        margin-bottom: 18px;
-        text-align: right;
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
-    .btn-primary {
+    .nav-pills .nav-link {
+        border-radius: 10px;
+        padding: 8px 18px;
+        font-weight: 600;
+        color: #4b5563;
+        transition: all 0.2s ease;
+    }
+
+    .nav-pills .nav-link.active {
+        background: linear-gradient(135deg, #1e40af, #2563eb);
+        color: white;
+        box-shadow: 0 4px 12px rgba(37,99,235,0.25);
+    }
+
+    .btn-create {
         padding: 10px 22px;
         border-radius: 10px;
         font-weight: 600;
@@ -56,48 +74,32 @@
         background: linear-gradient(135deg,#1e40af,#2563eb);
         color: white;
         box-shadow: 0 6px 20px rgba(37,99,235,.35);
+        text-decoration: none;
+        display: inline-block;
     }
 
-        .btn-primary:hover {
-            background: linear-gradient(135deg,#1e3a8a,#1d4ed8);
-            transform: translateY(-2px);
-        }
+    .btn-create:hover {
+        background: linear-gradient(135deg,#1e3a8a,#1d4ed8);
+        color: white;
+        transform: translateY(-2px);
+    }
 
-    #mytable thead th {
+    #mytable thead th, #archivedTable thead th {
         background: #1e40af !important;
         color: white !important;
         padding: 14px !important;
         border: none !important;
     }
 
-    #mytable tbody td {
+    #mytable tbody td, #archivedTable tbody td {
         background: white !important;
         padding: 14px !important;
         color: #1e3a8a;
         border-bottom: 1px solid #e3e8ef !important;
     }
 
-    #mytable tbody tr:hover td {
+    #mytable tbody tr:hover td, #archivedTable tbody tr:hover td {
         background: #ebf2ff !important;
-    }
-
-    .action-btn {
-        padding: 7px 14px;
-        border-radius: 8px;
-        font-size: 13px;
-        font-weight: 600;
-    }
-
-    .btn-success {
-        background: #16a34a;
-        color: white;
-        border: none;
-    }
-
-    .btn-danger {
-        background: #dc2626;
-        color: white;
-        border: none;
     }
 </style>
 
@@ -105,30 +107,65 @@
 
     <div class="custom-card-title">
         <i class="fa-solid fa-box-open me-2"></i>
-        Products List
+        Products Management
     </div>
 
-    <div class="top-btn">
-        <a asp-controller="Product"
-           asp-action="Create"
-           asp-area="Admin"
-           class="btn btn-primary">
-            <i class="fa-solid fa-circle-plus me-1"></i>
-            Create Product
-        </a>
+    <div class="top-bar">
+        <ul class="nav nav-pills" id="productTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="active-tab" data-toggle="pill" href="#active-products" role="tab">
+                    <i class="fa-solid fa-check-circle me-1"></i> Active Products
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="archived-tab" data-toggle="pill" href="#archived-products" role="tab">
+                    <i class="fa-solid fa-box-archive me-1"></i> Archived Products
+                </a>
+            </li>
+        </ul>
+
+        <div>
+            <a asp-controller="Product"
+               asp-action="Create"
+               asp-area="Admin"
+               class="btn-create">
+                <i class="fa-solid fa-circle-plus me-1"></i>
+                Create Product
+            </a>
+        </div>
     </div>
 
-    <table id="mytable" class="display table-hover" width="100%">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Category</th>
-                <th style="width:130px;">Actions</th>
-            </tr>
-        </thead>
-    </table>
+    <div class="tab-content" id="productTabContent">
+        <!-- Active Products Pane -->
+        <div class="tab-pane fade show active" id="active-products" role="tabpanel">
+            <table id="mytable" class="display table-hover" width="100%">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th style="width:130px;">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+
+        <!-- Archived Products Pane -->
+        <div class="tab-pane fade" id="archived-products" role="tabpanel">
+            <table id="archivedTable" class="display table-hover" width="100%">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Description</th>
+                        <th>Price</th>
+                        <th>Category</th>
+                        <th style="width:130px;">Actions</th>
+                    </tr>
+                </thead>
+            </table>
+        </div>
+    </div>
 
 </div>
 
