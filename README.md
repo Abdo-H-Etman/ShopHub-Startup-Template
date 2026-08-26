@@ -18,12 +18,16 @@ ShopHub serves as an enterprise-ready template and educational blueprint demonst
   - [4. Product Management & Image Uploads](#4-product-management--image-uploads)
   - [5. User & Role Administration](#5-user--role-administration)
   - [6. Authentication & Security](#6-authentication--security)
+  - [7. Checkout, Orders & Stripe Sandbox Payments](#7-checkout-orders--stripe-sandbox-payments)
+  - [8. Email Notifications](#8-email-notifications)
 - [Getting Started](#-getting-started)
   - [Prerequisites](#prerequisites)
   - [1. Clone Repository](#1-clone-repository)
   - [2. Database Configuration](#2-database-configuration)
-  - [3. Run Migrations & Seed Data](#3-run-migrations--seed-data)
-  - [4. Launch Application](#4-launch-application)
+  - [3. Stripe Sandbox Configuration](#3-stripe-sandbox-configuration)
+  - [4. Email Configuration](#4-email-configuration)
+  - [5. Run Migrations & Seed Data](#5-run-migrations--seed-data)
+  - [6. Launch Application](#6-launch-application)
 - [Default Seeded Accounts & Data](#-default-seeded-accounts--data)
 - [Application Routing & Endpoints](#-application-routing--endpoints)
 - [Design Patterns & Engineering Practices](#-design-patterns--engineering-practices)
@@ -124,6 +128,8 @@ ShopHub-Startup-Template/
 | **Admin Dashboard** | AdminLTE 3 + Bootstrap 5 | Modern, responsive dashboard layout with responsive sidebar |
 | **Interactive Tables** | jQuery DataTables | Client-side/AJAX data tables with sorting, filtering, and paging |
 | **UI Components** | SweetAlert2, Toastr, FontAwesome 6 | Interactive alerts, toast messages, and scalable iconography |
+| **Payments** | Stripe.net + Stripe.js | Stripe Sandbox payment processing using PaymentIntents and Stripe Payment Element |
+| **Email** | MailKit | SMTP-based order confirmation emails |
 
 ---
 
@@ -170,6 +176,25 @@ ShopHub-Startup-Template/
 - **Account Lockout Policy**: Configured to lock accounts for 10 minutes after 5 consecutive failed login attempts.
 - **Cookie Authentication**: Explicit paths configured for `/Account/Login` and `/Account/AccessDenied`.
 - **Role-Based Authorization Policy**: `AdminOnly` policy requiring authentication and the `Admin` role (`[Authorize(Policy = "AdminOnly")]`).
+
+### 7. Checkout, Orders & Stripe Sandbox Payments
+- **Checkout Flow**: Customers provide delivery information and review their cart before payment.
+- **Stripe PaymentIntent**: The server creates a Stripe PaymentIntent using the server-calculated order total.
+- **Stripe Payment Element**: Secure card/payment information is collected through Stripe.js without ShopHub storing card details.
+- **Payment Verification**: Orders are created only after Stripe confirms that the PaymentIntent succeeded.
+- **PaymentIntent Ownership**: PaymentIntents contain the authenticated user's ID in Stripe metadata and are verified before finalizing an order.
+- **Payment Amount Verification**: The server verifies the Stripe PaymentIntent amount against the calculated cart total to prevent client-side price manipulation.
+- **Payment Status Verification**: The backend checks the PaymentIntent status before creating the order.
+- **Order Finalization**: Successful payments trigger order creation, cart clearing, and order confirmation processing.
+- **Sandbox Testing**: Stripe test cards can be used during development without real charges.
+
+### 8. Email Notifications
+- **SMTP Integration**: MailKit is used to send application emails through an SMTP server.
+- **Email Service Abstraction**: Email functionality is exposed through an `IEmailService` interface to keep email infrastructure isolated from business logic.
+- **Order Confirmation Emails**: Customers receive an email after a successful payment and order creation.
+- **HTML Email Templates**: Order confirmation emails contain structured order information including order number, products, quantities, prices, and total amount.
+- **Asynchronous Sending**: Emails are sent asynchronously to avoid blocking the main request thread.
+- **Configuration-Based SMTP**: SMTP credentials and server settings are provided through application configuration/User Secrets rather than hard-coded values.
 
 ---
 
@@ -220,8 +245,74 @@ Update `myshop.Web/appsettings.Development.json`:
 > **Security Note:** Never commit production database credentials or sensitive secrets to version control. Use .NET User Secrets (`dotnet user-secrets`) or environment variables in production.
 
 ---
+### 3. Stripe Sandbox Configuration
 
-### 3. Run Migrations & Seed Data
+ShopHub uses Stripe Sandbox/Test Mode for payment processing.
+
+You must configure Stripe API keys before using the checkout and payment functionality.
+
+#### Create Stripe Test Keys
+
+Create a Stripe account and enable Test/Sandbox mode.
+
+From the Stripe Dashboard, obtain:
+
+* Publishable key (`pk_test_...`)
+* Secret key (`sk_test_...`)
+
+> ⚠️ Never commit your Stripe Secret Key to Git or expose it in client-side JavaScript.
+
+#### Configure .NET User Secrets
+
+The application uses .NET User Secrets to store Stripe credentials during local development.
+
+Navigate to the web project:
+
+```bash
+cd myshop.Web
+```
+Initialize User Secrets if they have not already been initialized:
+
+```bash
+dotnet user-secrets init
+```
+
+Configure the Stripe settings:
+
+```bash
+dotnet user-secrets set "Stripe:PublishableKey" "pk_test_your_publishable_key"
+dotnet user-secrets set "Stripe:SecretKey" "sk_test_your_secret_key"
+dotnet user-secrets set "Stripe:Currency" "usd"
+```
+
+Verify the configured secrets:
+
+```bash
+dotnet user-secrets list
+```
+
+### 4. Email Configuration
+
+ShopHub uses **MailKit** with SMTP to send order confirmation emails.
+
+You must have account on **MailTrap** to get the email setting from it
+
+Email configuration should be stored securely using .NET User Secrets during local development.
+
+Navigate to the web project:
+
+```bash
+cd myshop.Web
+```
+
+Configure your SMTP settings:
+
+```bash
+dotnet user-secrets set "EmailSettings:Username" "your_email@example.com"
+dotnet user-secrets set "EmailSettings:Password" "your_email_password"
+```
+
+### 5. Run Migrations & Seed Data
 
 The application includes automatic migration and data seeding on startup:
 
@@ -249,7 +340,7 @@ dotnet ef database update --project myshop.DAL --startup-project myshop.Web
 
 ---
 
-### 4. Launch Application
+### 6. Launch Application
 
 Run the application using the .NET CLI:
 
