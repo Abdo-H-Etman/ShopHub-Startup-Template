@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -114,23 +114,48 @@
     <header>
         <nav class="navbar navbar-expand-sm navbar-light border-bottom">
             <div class="container">
-                <a asp-controller="Cart" asp-action="Index" class="fa-solid fa-cart-shopping fa-xl"></a>
-
-                @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
-                {
-                    <a class="navbar-brand nav-link-box home-box" asp-area="Admin" asp-controller="Product"
-                       asp-action="Index">
-                        Admin Pannel
-                    </a>
-                }
+                <a class="navbar-brand fw-bold text-primary" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-bag-shopping me-1"></i> ShopHub
+                </a>
 
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" asp-controller="Home" asp-action="Index">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" asp-controller="Product" asp-action="Index">Products</a>
+                        </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" asp-controller="Order" asp-action="Index">
+                                    <i class="fa-solid fa-box me-1"></i> My Orders
+                                </a>
+                            </li>
+                        }
+                    </ul>
 
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto align-items-center">
+                        <li class="nav-item me-2">
+                            <a asp-controller="Cart" asp-action="Index" class="nav-link" title="Shopping Cart">
+                                <i class="fa-solid fa-cart-shopping fa-lg text-primary"></i>
+                            </a>
+                        </li>
+
+                        @if (User.Identity?.IsAuthenticated == true && User.IsInRole("Admin"))
+                        {
+                            <li class="nav-item me-2">
+                                <a class="admin-panel-btn btn-sm" asp-area="Admin" asp-controller="Product"
+                                   asp-action="Index">
+                                    <i class="fa-solid fa-gear me-1"></i> Admin Panel
+                                </a>
+                            </li>
+                        }
 
                         @if (User.Identity?.IsAuthenticated == true)
                         {
@@ -143,9 +168,7 @@
 
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-
                                     @Html.AntiForgeryToken()
-
                                     <button type="submit" class="nav-link btn btn-link border-0">
                                         <i class="fas fa-sign-out-alt me-1"></i>
                                         Logout
@@ -169,11 +192,8 @@
                                 </a>
                             </li>
                         }
-
                     </ul>
-
                 </div>
-
             </div>
         </nav>
     </header>
