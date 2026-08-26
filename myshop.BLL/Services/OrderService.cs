@@ -23,11 +23,21 @@ public class OrderService : IOrderService
         _mapper = mapper;
     }
 
-    public async Task<OrderHeaderDto> CreateOrderAsync(int userId, OrderCreateDto orderCreateDto, List<CartItem> cartItems)
+    public async Task<OrderHeaderDto> CreateOrderAsync(
+    int userId,
+    OrderCreateDto orderCreateDto,
+    List<CartItem> cartItems)
     {
         if (cartItems == null || !cartItems.Any())
         {
-            throw new InvalidOperationException("Cannot place an order with an empty cart.");
+            throw new InvalidOperationException(
+                "Cannot place an order with an empty cart.");
+        }
+
+        if (string.IsNullOrWhiteSpace(orderCreateDto.PaymentIntentId))
+        {
+            throw new InvalidOperationException(
+                "A successful payment is required before creating the order.");
         }
 
         var totalPrice = cartItems.Sum(c => c.Price * c.Quantity);
@@ -35,19 +45,26 @@ public class OrderService : IOrderService
         var orderHeader = new OrderHeader
         {
             ApplicationUserId = userId,
+
             Name = orderCreateDto.Name,
             Address = orderCreateDto.Address,
             City = orderCreateDto.City,
             PostalCode = orderCreateDto.PostalCode,
             PhoneNumber = orderCreateDto.PhoneNumber,
+
             OrderDate = DateTime.UtcNow,
+
             TotalPrice = totalPrice,
+
             OrderStatus = "Approved",
-            PaymentStatus = "Approved",
-            PaymentDate = DateTime.UtcNow
+            PaymentStatus = "Paid",
+            PaymentDate = DateTime.UtcNow,
+
+            PaymentIntentId = orderCreateDto.PaymentIntentId
         };
 
         await _unitOfWork.OrderHeaders.AddAsync(orderHeader);
+
         await _unitOfWork.SaveChangesAsync();
 
         foreach (var item in cartItems)
@@ -67,7 +84,6 @@ public class OrderService : IOrderService
 
         return (await GetOrderDetailsAsync(orderHeader.Id))!;
     }
-
     public async Task<PagedResultDto<OrderSummaryDto>> GetPagedUserOrdersAsync(int userId, int pageNumber,
                 int pageSize, string? sort)
     {
@@ -170,6 +186,26 @@ public class OrderService : IOrderService
         }).ToList();
     }
 
+    public async Task<OrderHeaderDto?> GetOrderByPaymentIntentIdAsync(string paymentIntentId, int userId)
+    {
+        var order = await _unitOfWork.OrderHeaders.FirstOrDefaultAsync(
+            o =>
+                o.PaymentIntentId == paymentIntentId &&
+                o.ApplicationUserId == userId,
+            q => q
+                .Include(o => o.ApplicationUser)
+                .Include(o => o.OrderDetails)
+                .ThenInclude(d => d.Product));
+
+        if (order == null)
+        {
+            return null;
+        }
+
+        return await GetOrderDetailsAsync(
+            order.Id,
+            userId);
+    }
     public async Task<bool> UpdateOrderStatusAsync(int orderId, string orderStatus, string? paymentStatus = null)
     {
         var order = await _unitOfWork.OrderHeaders.GetByIdAsync(orderId);

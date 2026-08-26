@@ -9,4 +9,5 @@ public class OrderCreateDto
     public string? PostalCode { get; set; }
     public string? PhoneNumber { get; set; }
     public string CustomerEmail { get; set; } = string.Empty;
+    public string PaymentIntentId { get; set; } = string.Empty;
 }
