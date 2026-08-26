@@ -1,6 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using myshop.DataAccess;
+using myshop.Entities.Models.Interfaces;
 using Repositories.Interfaces;
 
 namespace Repositories;
@@ -16,9 +21,14 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         _dbSet = _context.Set<T>();
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? include = null)
+    public async Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? include = null, bool ignoreQueryFilters = false)
     {
-        IQueryable<T> query = _dbSet;
+        IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (ignoreQueryFilters)
+        {
+            query = query.IgnoreQueryFilters();
+        }
 
         if (include != null)
         {
@@ -28,25 +38,43 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await query.ToListAsync();
     }
 
-    public async Task<T?> GetByIdAsync(int id) =>
-        await _dbSet.FindAsync(id);
-
-    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, Func<IQueryable<T>, IQueryable<T>>? include = null)
+    public async Task<T?> GetByIdAsync(int id, bool ignoreQueryFilters = false)
     {
-        IQueryable<T> query = _dbSet;
+        if (ignoreQueryFilters)
+        {
+            return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+        }
+
+        return await _dbSet.FindAsync(id);
+    }
+
+    public async Task<T?> FirstOrDefaultAsync(
+        Expression<Func<T, bool>> predicate,
+        Func<IQueryable<T>, IQueryable<T>>? include = null,
+        bool ignoreQueryFilters = false)
+    {
+        IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (ignoreQueryFilters)
+        {
+            query = query.IgnoreQueryFilters();
+        }
 
         if (include != null)
+        {
             query = include(query);
+        }
 
-        return await query.AsNoTracking()
-                .FirstOrDefaultAsync(predicate);
+        return await query.FirstOrDefaultAsync(predicate);
     }
+
     public async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
         int pageNumber,
         int pageSize,
         Expression<Func<T, bool>>? predicate = null,
         Func<IQueryable<T>, IQueryable<T>>? include = null,
-        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null)
+        Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
+        bool ignoreQueryFilters = false)
     {
         if (pageNumber < 1)
             pageNumber = 1;
@@ -55,6 +83,11 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             pageSize = 10;
 
         IQueryable<T> query = _dbSet.AsNoTracking();
+
+        if (ignoreQueryFilters)
+        {
+            query = query.IgnoreQueryFilters();
+        }
 
         if (predicate != null)
         {
@@ -72,6 +105,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         {
             query = orderBy(query);
         }
+
         var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
 
         return (items, totalCount);
@@ -85,8 +119,21 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
 
     public async Task DeleteAsync(int id)
     {
-        var entity = await GetByIdAsync(id);
+        var entity = await _dbSet.FindAsync(id);
         if (entity != null)
+        {
             _dbSet.Remove(entity);
+        }
+    }
+
+    public async Task RestoreAsync(int id)
+    {
+        var entity = await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+        if (entity is ISoftDeletable softDeletable)
+        {
+            softDeletable.IsDeleted = false;
+            softDeletable.DeletedAt = null;
+            _dbSet.Update(entity);
+        }
     }
 }
