@@ -2,9 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using myshop.BLL.DTOs;
 using myshop.BLL.DTOs.Product;
-using myshop.BLL.Mapping;
 using myshop.BLL.Services;
 using myshop.Entities.Models;
 using myshop.Entities.ViewModels;
@@ -19,9 +17,10 @@ public class ProductController : Controller
     private readonly ICategoryService _categoryService;
     private readonly IMapper _mapper;
 
-    public ProductController(IProductService productService,
-                ICategoryService categoryService,
-                IMapper mapper)
+    public ProductController(
+        IProductService productService,
+        ICategoryService categoryService,
+        IMapper mapper)
     {
         _productService = productService;
         _categoryService = categoryService;
@@ -37,8 +36,13 @@ public class ProductController : Controller
     public async Task<IActionResult> GetData()
     {
         var products = await _productService.GetAllAsync();
+        return Json(new { data = products });
+    }
 
-
+    [HttpGet]
+    public async Task<IActionResult> GetArchivedData()
+    {
+        var products = await _productService.GetArchivedAsync();
         return Json(new { data = products });
     }
 
@@ -54,6 +58,7 @@ public class ProductController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ProductVM productVM, IFormFile? file)
     {
         if (!ModelState.IsValid)
@@ -65,19 +70,15 @@ public class ProductController : Controller
         try
         {
             CreateProductDto createProduct = _mapper.Map<CreateProductDto>(productVM.Product);
-
             await _productService.CreateAsync(createProduct, file);
 
-            TempData["Create"] = "Product has Created Successfully";
-
+            TempData["Create"] = "Product has been created successfully.";
             return RedirectToAction("Index");
         }
         catch (ArgumentException ex)
         {
             ModelState.AddModelError("file", ex.Message);
-
             productVM.CategoryList = await GetCategories();
-
             return View(productVM);
         }
     }
@@ -91,7 +92,6 @@ public class ProductController : Controller
         }
 
         var dto = await _productService.GetByIdForUpdateAsync(id.Value);
-
         if (dto == null)
             return NotFound();
 
@@ -106,6 +106,7 @@ public class ProductController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(ProdcutEditVM productVM, IFormFile? file)
     {
         if (!ModelState.IsValid)
@@ -117,36 +118,15 @@ public class ProductController : Controller
         try
         {
             await _productService.UpdateAsync(productVM.Product.Id, productVM.Product, file);
-
-            TempData["Update"] = "Product has Updated Successfully";
-
+            TempData["Update"] = "Product has been updated successfully.";
             return RedirectToAction("Index");
         }
         catch (ArgumentException ex)
         {
             ModelState.AddModelError("file", ex.Message);
-
             productVM.CategoryList = await GetCategories();
-
             return View(productVM);
         }
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Delete(int? id)
-    {
-        if (id == null || id == 0)
-        {
-            return NotFound();
-        }
-
-        var product = await _productService.GetByIdAsync(id.Value);
-        if (product == null)
-        {
-            return NotFound();
-        }
-
-        return View(product);
     }
 
     [HttpDelete]
@@ -154,25 +134,42 @@ public class ProductController : Controller
     {
         if (id == null || id == 0)
         {
-            return Json(new { success = false, message = "Invalid product id." });
+            return Json(new { success = false, message = "Invalid product ID." });
         }
 
         try
         {
             await _productService.DeleteAsync(id.Value);
-            return Json(new { success = true, message = "Product has been Deleted" });
+            return Json(new { success = true, message = "Product has been archived (soft-deleted)." });
         }
-        catch (InvalidOperationException)
+        catch (InvalidOperationException ex)
         {
-            return Json(new { success = false, message = "Error while Deleting" });
+            return Json(new { success = false, message = ex.Message });
         }
     }
 
+    [HttpPost]
+    public async Task<IActionResult> RestoreAjax(int? id)
+    {
+        if (id == null || id == 0)
+        {
+            return Json(new { success = false, message = "Invalid product ID." });
+        }
+
+        try
+        {
+            await _productService.RestoreAsync(id.Value);
+            return Json(new { success = true, message = "Product has been restored successfully." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = "Failed to restore product: " + ex.Message });
+        }
+    }
 
     private async Task<IEnumerable<SelectListItem>> GetCategories()
     {
         var categories = await _categoryService.GetAllAsync();
-
         return categories.Select(x => new SelectListItem
         {
             Text = x.Name,
