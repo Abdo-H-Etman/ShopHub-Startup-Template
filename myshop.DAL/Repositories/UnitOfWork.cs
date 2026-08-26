@@ -1,3 +1,5 @@
+using System;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using myshop.DataAccess;
@@ -19,6 +21,10 @@ public class UnitOfWork : IUnitOfWork
 
     public IGenericRepository<Product> Products => _serviceProvider.GetRequiredService<IGenericRepository<Product>>();
     public IGenericRepository<Category> Categories => _serviceProvider.GetRequiredService<IGenericRepository<Category>>();
+    public IGenericRepository<OrderHeader> OrderHeaders => _serviceProvider.GetRequiredService<IGenericRepository<OrderHeader>>();
+    public IGenericRepository<OrderDetail> OrderDetails => _serviceProvider.GetRequiredService<IGenericRepository<OrderDetail>>();
+    public IGenericRepository<Review> Reviews => _serviceProvider.GetRequiredService<IGenericRepository<Review>>();
+    public IGenericRepository<ShoppingCart> ShoppingCarts => _serviceProvider.GetRequiredService<IGenericRepository<ShoppingCart>>();
 
     public async Task<int> SaveChangesAsync()
     {
