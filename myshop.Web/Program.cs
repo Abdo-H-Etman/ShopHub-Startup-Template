@@ -4,6 +4,7 @@ using myshop.BLL.Email;
 using myshop.BLL.Interfaces;
 using myshop.BLL.Mapping;
 using myshop.BLL.Services;
+using myshop.BLL.Stripe;
 using myshop.DataAccess;
 using myshop.Entities.Models;
 using myshop.Web.Mapping;
@@ -58,6 +59,8 @@ builder.Services.AddSession(options =>
 // Configure Options
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
+builder.Services.Configure<StripeSettings>(
+    builder.Configuration.GetSection("Stripe"));
 // Register Repositories and Unit of Work
 builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -71,6 +74,7 @@ builder.Services.AddScoped<IFileService, LocalFileService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IStripePaymentService, StripePaymentService>();
 builder.Services.AddScoped<IReviewService, ReviewService>();
 builder.Services.AddScoped<InitialDataSeeder>();
 
