@@ -1,4 +1,4 @@
-@using myshop.Entities.ViewModels
+﻿@using myshop.Entities.ViewModels
 
 @model ProductIndexVM
 
@@ -79,8 +79,9 @@
 
         <div class="col-md-6">
             <div class="input-group">
-                <input type="text" id="searchInput" name="search" value="@Context.Request.Query["search"]" class="form-control"
-                       placeholder="Search products (type at least 3 characters)..." autocomplete="off" />
+                <input type="text" id="searchInput" name="search" value="@Context.Request.Query["search"]"
+                       class="form-control" placeholder="Search products (type at least 3 characters)..."
+                       autocomplete="off" />
 
                 <button type="submit" class="btn btn-primary">
                     <i class="fa-solid fa-search"></i>
@@ -129,8 +130,6 @@
             </select>
         </div>
 
-        <input type="hidden" id="pageNumber" name="pageNumber" />
-
     </form>
 
     <div id="productListContainer" style="transition: opacity 0.2s ease;">
@@ -145,7 +144,6 @@
             const searchInput = document.getElementById("searchInput");
             const sortSelect = document.getElementById("sortSelect");
             const pageSizeSelect = document.getElementById("pageSizeSelect");
-            const pageNumberInput = document.getElementById("pageNumber");
             const productListContainer = document.getElementById("productListContainer");
             const filterForm = document.getElementById("productFilterForm");
 
@@ -155,7 +153,6 @@
                 const search = searchInput.value.trim();
                 const sort = sortSelect.value;
                 const pageSize = pageSizeSelect.value;
-                pageNumberInput.value = pageNumber;
 
                 const params = new URLSearchParams({
                     search: search,
@@ -165,7 +162,12 @@
                     ajax: "true"
                 });
 
-                const newUrl = `${window.location.pathname}?search=${encodeURIComponent(search)}&sort=${encodeURIComponent(sort)}&pageSize=${encodeURIComponent(pageSize)}&pageNumber=${pageNumber}`;
+                const newUrl =
+                    `${window.location.pathname}?search=${encodeURIComponent(search)}` +
+                    `&sort=${encodeURIComponent(sort)}` +
+                    `&pageSize=${encodeURIComponent(pageSize)}` +
+                    `&pageNumber=${pageNumber}`;
+
                 window.history.replaceState({}, '', newUrl);
 
                 productListContainer.style.opacity = "0.4";
@@ -175,23 +177,21 @@
                         "X-Requested-With": "XMLHttpRequest"
                     }
                 })
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, "text/html");
-                    const parsedContainer = doc.getElementById("productListContainer");
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error: ${response.status}`);
+                        }
 
-                    if (parsedContainer) {
-                        productListContainer.innerHTML = parsedContainer.innerHTML;
-                    } else {
+                        return response.text();
+                    })
+                    .then(html => {
                         productListContainer.innerHTML = html;
-                    }
-                    productListContainer.style.opacity = "1";
-                })
-                .catch(err => {
-                    console.error("Failed to load products:", err);
-                    productListContainer.style.opacity = "1";
-                });
+                        productListContainer.style.opacity = "1";
+                    })
+                    .catch(err => {
+                        console.error("Failed to load products:", err);
+                        productListContainer.style.opacity = "1";
+                    });
             }
 
             // Live search: triggers when >= 3 characters or cleared back to 0

@@ -1,58 +1,64 @@
-@using myshop.Entities.ViewModels;
-@model ProductIndexVM
+@using myshop.Entities.ViewModels
+@model PaginationVM
 
 @if (Model.TotalPages > 1)
 {
-    <nav aria-label="Product pagination">
+    <nav aria-label="Pagination">
 
         <ul class="pagination justify-content-center mt-5">
 
+            <!-- Previous -->
             <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
 
-                <a class="page-link"
-                   asp-controller="Product"
-                   asp-action="Index"
-                   asp-route-pageNumber="@(Model.PageNumber - 1)"
-                   asp-route-pageSize="@Model.PageSize"
-                   asp-route-search="@Model.Search"
-                   asp-route-sort="@Model.Sort">
+                @{
+                    var previousRouteValues = new Dictionary<string, string?>(Model.RouteValues)
+                    {
+                        ["pageNumber"] = (Model.PageNumber - 1).ToString()
+                    };
+                }
 
+                <a class="page-link" asp-controller="@Model.Controller" asp-action="@Model.Action"
+                   asp-all-route-data="previousRouteValues">
                     Previous
-
                 </a>
 
             </li>
 
+
+            <!-- Page Numbers -->
             @for (var pageNum = 1; pageNum <= Model.TotalPages; pageNum++)
             {
+                var pageRouteValues = new Dictionary<string, string?>(Model.RouteValues)
+                {
+                    ["pageNumber"] = pageNum.ToString()
+                };
+
                 <li class="page-item @(pageNum == Model.PageNumber ? "active" : "")">
 
-                    <a class="page-link"
-                       asp-controller="Product"
-                       asp-action="Index"
-                       asp-route-pageNumber="@pageNum"
-                       asp-route-pageSize="@Model.PageSize"
-                       asp-route-search="@Model.Search"
-                       asp-route-sort="@Model.Sort">
+                    <a class="page-link" asp-controller="@Model.Controller" asp-action="@Model.Action"
+                       asp-all-route-data="pageRouteValues">
 
                         @pageNum
+
                     </a>
 
                 </li>
             }
 
+
+            <!-- Next -->
             <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
 
-                <a class="page-link"
-                   asp-controller="Product"
-                   asp-action="Index"
-                   asp-route-pageNumber="@(Model.PageNumber + 1)"
-                   asp-route-pageSize="@Model.PageSize"
-                   asp-route-search="@Model.Search"
-                   asp-route-sort="@Model.Sort">
+                @{
+                    var nextRouteValues = new Dictionary<string, string?>(Model.RouteValues)
+                    {
+                        ["pageNumber"] = (Model.PageNumber + 1).ToString()
+                    };
+                }
 
+                <a class="page-link" asp-controller="@Model.Controller" asp-action="@Model.Action"
+                   asp-all-route-data="nextRouteValues">
                     Next
-
                 </a>
 
             </li>
