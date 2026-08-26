@@ -1,0 +1,207 @@
+@using myshop.BLL.DTOs.Common
+@using myshop.BLL.DTOs.Order
+@using myshop.Entities.ViewModels
+@model PagedResultDto<OrderSummaryDto>
+
+@{
+    ViewData["Title"] = "My Orders";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .orders-card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border: 1px solid #eef2f6;
+        padding: 35px;
+    }
+
+    .status-badge-approved {
+        background: #ecfdf5;
+        color: #059669;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+    }
+
+    .status-badge-pending {
+        background: #fffbeb;
+        color: #d97706;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+    }
+
+    .status-badge-shipped {
+        background: #eff6ff;
+        color: #2563eb;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+    }
+
+    .table thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        font-size: 14px;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 14px 16px;
+    }
+
+    .table tbody td {
+        padding: 16px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .table tbody tr:hover td {
+        background: #f8fafc;
+    }
+</style>
+
+<div class="container py-5">
+    <form id="orderFilterForm" asp-controller="Order" asp-action="Index" method="get" class="row g-3 mb-5">
+
+        <div class="col-md-3">
+            <select id="sortSelect" name="sort" class="form-select">
+
+                <option value="datedesc" selected="@(Context.Request.Query["sort"] == "datedesc")">
+                    Date: &uarr;
+                </option>
+
+                <option value="dateasc" selected="@(Context.Request.Query["sort"] == "dateasc")">
+                    Date: &darr;
+                </option>
+
+                <option value="totalpriceasc" selected="@(Context.Request.Query["sort"] == "totalpriceasc")">
+                    Price: Low to High
+                </option>
+
+                <option value="totalpricedesc" selected="@(Context.Request.Query["sort"] == "totalpricedesc")">
+                    Price: High to Low
+                </option>
+
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <select id="pageSizeSelect" name="pageSize" class="form-select">
+
+                <option value="10" selected="@(Model.PageSize == 10)">
+                    10 per page
+                </option>
+
+                <option value="15" selected="@(Model.PageSize == 15)">
+                    15 per page
+                </option>
+
+                <option value="20" selected="@(Model.PageSize == 20)">
+                    20 per page
+                </option>
+
+            </select>
+        </div>
+
+    </form>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">My Orders</h2>
+            <p class="text-muted mb-0">Track and view all your past order receipts.</p>
+        </div>
+
+        <a asp-controller="Product" asp-action="Index" class="btn btn-outline-primary rounded-pill px-4">
+            <i class="fa-solid fa-store me-1"></i> Browse Products
+        </a>
+    </div>
+
+    <div id="orderListContainer" style="transition: opacity 0.2s ease;">
+        <partial name="_OrderList" model="Model" />
+    </div>
+
+</div>
+
+@section Scripts
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let debounceTimer = null;
+            const sortSelect = document.getElementById("sortSelect");
+            const pageSizeSelect = document.getElementById("pageSizeSelect");
+            const orderListContainer = document.getElementById("orderListContainer");
+            const filterForm = document.getElementById("orderFilterForm");
+
+            function fetchOrders(pageNumber = 1) {
+                const sort = sortSelect.value;
+                const pageSize = pageSizeSelect.value;
+
+                const params = new URLSearchParams({
+                    sort: sort,
+                    pageSize: pageSize,
+                    pageNumber: pageNumber,
+                    ajax: "true"
+                });
+
+                const newUrl =
+                    `${window.location.pathname}?sort=${encodeURIComponent(sort)}` +
+                    `&pageSize=${encodeURIComponent(pageSize)}` +
+                    `&pageNumber=${pageNumber}`;
+
+                window.history.replaceState({}, '', newUrl);
+
+                orderListContainer.style.opacity = "0.4";
+
+                fetch(`/Order/Index?${params.toString()}`, {
+                    headers: {
+                        "X-Requested-With": "XMLHttpRequest"
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error: ${response.status}`);
+                        }
+
+                        return response.text();
+                    })
+                    .then(html => {
+                        orderListContainer.innerHTML = html;
+                        orderListContainer.style.opacity = "1";
+                    })
+                    .catch(err => {
+                        console.error("Failed to load orders:", err);
+                        orderListContainer.style.opacity = "1";
+                    });
+            }
+
+            filterForm.addEventListener("submit", function (e) {
+                e.preventDefault();
+                clearTimeout(debounceTimer);
+                fetchOrders(1);
+            });
+
+            sortSelect.addEventListener("change", function () {
+                fetchOrders(1);
+            });
+
+            pageSizeSelect.addEventListener("change", function () {
+                fetchOrders(1);
+            });
+
+            orderListContainer.addEventListener("click", function (e) {
+                const link = e.target.closest("a.page-link");
+                if (link && !link.closest("li.page-item.disabled")) {
+                    e.preventDefault();
+                    const url = new URL(link.href, window.location.origin);
+                    const page = url.searchParams.get("pageNumber") || 1;
+                    fetchOrders(page);
+                }
+            });
+        });
+    </script>
+}

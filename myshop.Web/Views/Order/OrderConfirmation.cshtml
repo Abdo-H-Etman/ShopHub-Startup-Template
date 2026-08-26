@@ -1,0 +1,154 @@
+@model myshop.BLL.DTOs.Order.OrderHeaderDto
+
+@{
+    ViewData["Title"] = "Order Confirmation";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .confirmation-card {
+        background: #ffffff;
+        border-radius: 24px;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        border: 1px solid #eef2f6;
+        padding: 45px 35px;
+        max-width: 800px;
+        margin: 40px auto;
+        text-align: center;
+    }
+
+    .success-icon-box {
+        width: 90px;
+        height: 90px;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 42px;
+        margin-bottom: 25px;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.35);
+        animation: scaleIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @@keyframes scaleIn {
+        from { transform: scale(0); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    .order-details-box {
+        background: #f8fafc;
+        border-radius: 16px;
+        padding: 25px;
+        margin: 30px 0;
+        text-align: left;
+        border: 1px solid #e2e8f0;
+    }
+
+    .order-table th {
+        color: #64748b;
+        font-size: 13px;
+        text-transform: uppercase;
+        border-bottom: 2px solid #e2e8f0;
+        padding: 10px 0;
+    }
+
+    .order-table td {
+        padding: 12px 0;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+    }
+
+    .status-badge {
+        background: #ecfdf5;
+        color: #059669;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-block;
+    }
+</style>
+
+<div class="container py-4">
+
+    <div class="confirmation-card">
+
+        <div class="success-icon-box">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <h2 class="fw-bold mb-2">Thank You For Your Order!</h2>
+        <p class="text-muted mb-4">
+            Your order <strong>#@Model.Id</strong> has been placed successfully. A confirmation email has been sent to <strong>@Model.CustomerEmail</strong>.
+        </p>
+
+        <span class="status-badge mb-4">
+            <i class="fa-solid fa-circle-check me-1"></i> Payment Status: @(Model.PaymentStatus ?? "Approved")
+        </span>
+
+        <div class="order-details-box">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h6 class="text-muted text-uppercase fw-bold mb-1" style="font-size: 12px;">Delivery Address</h6>
+                    <p class="mb-0 fw-semibold text-dark">@Model.Name</p>
+                    <p class="mb-0 text-muted">@Model.Address, @Model.City @Model.PostalCode</p>
+                    <p class="mb-0 text-muted">Phone: @Model.PhoneNumber</p>
+                </div>
+                <div class="col-md-6 text-md-end mt-3 mt-md-0">
+                    <h6 class="text-muted text-uppercase fw-bold mb-1" style="font-size: 12px;">Order Info</h6>
+                    <p class="mb-0 text-muted">Order Date: <strong>@Model.OrderDate.ToLocalTime().ToString("MMM dd, yyyy - hh:mm tt")</strong></p>
+                    <p class="mb-0 text-muted">Order Status: <strong class="text-primary">@Model.OrderStatus</strong></p>
+                </div>
+            </div>
+
+            <h6 class="text-muted text-uppercase fw-bold mb-3" style="font-size: 12px;">Purchased Items</h6>
+
+            <table class="table order-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="text-center">Quantity</th>
+                        <th class="text-end">Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.OrderDetails)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="@Url.Content(string.IsNullOrWhiteSpace(item.ProductImg) ? "~/Images/no-image.png" : "~/" + item.ProductImg)"
+                                         alt="@item.ProductName" style="width: 45px; height: 45px; object-fit: cover;" class="rounded"
+                                         onerror="this.src='/Images/no-image.png';" />
+                                    <span class="fw-semibold text-dark">@item.ProductName</span>
+                                </div>
+                            </td>
+                            <td class="text-center text-muted">@item.Count</td>
+                            <td class="text-end fw-bold text-dark">$@item.TotalPrice.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2" class="fw-bold pt-3 fs-5">Total Paid</td>
+                        <td class="text-end fw-bold pt-3 fs-5 text-primary">$@Model.TotalPrice.ToString("N2")</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a asp-controller="Order" asp-action="Index" class="btn btn-outline-primary px-4 py-2 rounded-pill fw-semibold">
+                <i class="fa-solid fa-list-check me-2"></i> View My Orders
+            </a>
+            <a asp-controller="Product" asp-action="Index" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold">
+                <i class="fa-solid fa-store me-2"></i> Continue Shopping
+            </a>
+        </div>
+
+    </div>
+
+</div>

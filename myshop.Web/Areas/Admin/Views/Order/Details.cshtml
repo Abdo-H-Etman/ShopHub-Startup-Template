@@ -1,0 +1,298 @@
+@using myshop.BLL.DTOs.Order
+@model OrderHeaderDto
+
+@{
+    ViewBag.PageTitle = $"Order #{Model.Id}";
+    ViewBag.CardTitle = "Order Details";
+    Layout = "~/Views/Shared/_Dashboard.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .detail-card {
+        background: #fff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 8px 24px rgba(0,0,0,.06);
+        padding: 28px;
+        margin-bottom: 22px;
+    }
+
+    .section-title {
+        font-size: 15px;
+        font-weight: 700;
+        color: #1e3a8a;
+        border-bottom: 2px solid #e2e8f0;
+        padding-bottom: 10px;
+        margin-bottom: 18px;
+    }
+
+    .info-row { display: flex; gap: 6px; margin-bottom: 10px; font-size: 14px; }
+    .info-label { font-weight: 600; color: #475569; min-width: 130px; }
+    .info-value { color: #0f172a; }
+
+    .status-badge { display: inline-block; font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 20px; }
+    .status-pending   { background: #fffbeb; color: #d97706; }
+    .status-approved  { background: #ecfdf5; color: #059669; }
+    .status-shipped   { background: #eff6ff; color: #2563eb; }
+    .status-delivered { background: #f0fdf4; color: #16a34a; }
+    .status-cancelled { background: #fef2f2; color: #dc2626; }
+
+    #itemsTable thead th {
+        background: #1e40af !important;
+        color: white !important;
+        padding: 12px 16px !important;
+        border: none !important;
+    }
+
+    #itemsTable tbody td {
+        padding: 14px 16px !important;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    .back-btn {
+        background: none;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        padding: 7px 16px;
+        color: #475569;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 20px;
+        transition: all .2s;
+    }
+    .back-btn:hover { background: #f1f5f9; color: #1e3a8a; border-color: #94a3b8; }
+</style>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-check-circle me-1"></i> @TempData["Success"]
+        <button type="button" class="btn-close" data-dismiss="alert"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fa-solid fa-exclamation-circle me-1"></i> @TempData["Error"]
+        <button type="button" class="btn-close" data-dismiss="alert"></button>
+    </div>
+}
+
+<a asp-area="Admin" asp-controller="Order" asp-action="Index" class="back-btn">
+    <i class="fa-solid fa-arrow-left"></i> Back to Orders
+</a>
+
+<div class="row g-3">
+
+    <!-- Left Column: Customer & Delivery Info -->
+    <div class="col-lg-4">
+
+        <!-- Order Summary Card -->
+        <div class="detail-card">
+            <div class="section-title"><i class="fa-solid fa-receipt me-2"></i>Order Summary</div>
+
+            <div class="info-row">
+                <span class="info-label">Order ID:</span>
+                <span class="info-value fw-bold text-primary">#@Model.Id</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Order Date:</span>
+                <span class="info-value">@Model.OrderDate.ToLocalTime().ToString("MMM dd, yyyy — hh:mm tt")</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Total Amount:</span>
+                <span class="info-value fw-bold">$@Model.TotalPrice.ToString("N2")</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Order Status:</span>
+                <span>
+                    @{
+                        var statusCls = (Model.OrderStatus ?? "").ToLower() switch
+                        {
+                            "approved"  => "status-approved",
+                            "shipped"   => "status-shipped",
+                            "delivered" => "status-delivered",
+                            "cancelled" => "status-cancelled",
+                            _           => "status-pending"
+                        };
+                    }
+                    <span class="status-badge @statusCls">@(Model.OrderStatus ?? "Pending")</span>
+                </span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Payment:</span>
+                <span class="status-badge status-approved">@(Model.PaymentStatus ?? "Approved")</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.TrackingNumber))
+            {
+                <div class="info-row">
+                    <span class="info-label">Tracking #:</span>
+                    <span class="info-value text-primary fw-semibold">@Model.TrackingNumber</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Carrier:</span>
+                    <span class="info-value">@Model.Carrier</span>
+                </div>
+            }
+        </div>
+
+        <!-- Customer & Delivery Card -->
+        <div class="detail-card">
+            <div class="section-title"><i class="fa-solid fa-location-dot me-2"></i>Customer & Delivery</div>
+
+            <div class="info-row">
+                <span class="info-label">Name:</span>
+                <span class="info-value">@Model.Name</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Email:</span>
+                <span class="info-value">@Model.CustomerEmail</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Phone:</span>
+                <span class="info-value">@(Model.PhoneNumber ?? "—")</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Address:</span>
+                <span class="info-value">@Model.Address</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">City:</span>
+                <span class="info-value">@Model.City @Model.PostalCode</span>
+            </div>
+        </div>
+
+        <!-- Update Status Card -->
+        <div class="detail-card">
+            <div class="section-title"><i class="fa-solid fa-pen-to-square me-2"></i>Update Order Status</div>
+
+            <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.Id" />
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Order Status</label>
+                    <select name="orderStatus" class="form-select">
+                        @foreach (var status in new[] { "Pending", "Approved", "Processing", "Shipped", "Delivered", "Cancelled" })
+                        {
+                            if (status == Model.OrderStatus)
+                            {
+                                <option value="@status" selected>@status</option>
+                            }
+                            else
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Payment Status</label>
+                    <select name="paymentStatus" class="form-select">
+                        @foreach (var status in new[] { "Pending", "Approved", "Rejected", "Refunded" })
+                        {
+                            if (status == Model.PaymentStatus)
+                            {
+                                <option value="@status" selected>@status</option>
+                            }
+                            else
+                            {
+                                <option value="@status">@status</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Tracking Number <span class="text-muted">(optional)</span></label>
+                    <input type="text" name="trackingNumber" class="form-control" placeholder="e.g. 1Z999AA10123456784"
+                           value="@Model.TrackingNumber" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Carrier <span class="text-muted">(optional)</span></label>
+                    <input type="text" name="carrier" class="form-control" placeholder="e.g. UPS, FedEx, DHL"
+                           value="@Model.Carrier" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 fw-bold rounded-pill">
+                    <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- Right Column: Order Items -->
+    <div class="col-lg-8">
+        <div class="detail-card h-100 p-0 overflow-hidden">
+            <div class="p-4 pb-0">
+                <div class="section-title">
+                    <i class="fa-solid fa-bag-shopping me-2"></i>
+                    Order Items (@Model.OrderDetails.Sum(d => d.Count) items)
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="itemsTable" class="table mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th class="text-center">Unit Price</th>
+                            <th class="text-center">Qty</th>
+                            <th class="text-end">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.OrderDetails)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if (!string.IsNullOrWhiteSpace(item.ProductImg))
+                                        {
+                                            <img src="@Url.Content("~/" + item.ProductImg)"
+                                                 style="width:48px;height:48px;object-fit:cover;"
+                                                 class="rounded border"
+                                                 onerror="this.src='/Images/no-image.png';" />
+                                        }
+                                        else
+                                        {
+                                            <div class="bg-light rounded border d-flex align-items-center justify-content-center"
+                                                 style="width:48px;height:48px;">
+                                                <i class="fa-solid fa-box text-muted"></i>
+                                            </div>
+                                        }
+                                        <div>
+                                            <h6 class="mb-0 fw-semibold">@item.ProductName</h6>
+                                            <small class="text-muted">ID: @item.ProductId</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-muted">$@item.Price.ToString("N2")</td>
+                                <td class="text-center fw-semibold">@item.Count</td>
+                                <td class="text-end fw-bold">$@item.TotalPrice.ToString("N2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr style="background: #f8fafc;">
+                            <td colspan="3" class="text-end fw-bold py-3 fs-6">Grand Total:</td>
+                            <td class="text-end fw-bold py-3 fs-5 text-primary">$@Model.TotalPrice.ToString("N2")</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>

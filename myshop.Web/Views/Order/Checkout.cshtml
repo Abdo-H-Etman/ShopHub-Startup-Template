@@ -1,0 +1,286 @@
+@model myshop.Web.ViewModels.CheckoutVM
+
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+<style>
+    .checkout-container {
+        padding: 40px 0;
+    }
+
+    .checkout-card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+        border: 1px solid #eef2f6;
+        padding: 30px;
+        margin-bottom: 25px;
+    }
+
+    .checkout-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f1f5f9;
+    }
+
+    .checkout-card-header i {
+        font-size: 22px;
+        color: #2563eb;
+        background: #eff6ff;
+        padding: 10px;
+        border-radius: 12px;
+    }
+
+    .checkout-card-header h4 {
+        margin: 0;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .summary-card {
+        background: #ffffff;
+        border-radius: 18px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        border: 1px solid #eef2f6;
+        padding: 30px;
+        position: sticky;
+        top: 20px;
+    }
+
+    .summary-item {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 14px 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .summary-item-img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 10px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+
+    .payment-badge {
+        background: #ecfdf5;
+        color: #059669;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-place-order {
+        background: linear-gradient(135deg, #16a34a, #22c55e);
+        color: white;
+        font-weight: 700;
+        font-size: 17px;
+        padding: 16px 24px;
+        border-radius: 14px;
+        border: none;
+        width: 100%;
+        box-shadow: 0 8px 25px rgba(34, 197, 94, 0.35);
+        transition: all 0.25s ease;
+    }
+
+    .btn-place-order:hover {
+        background: linear-gradient(135deg, #15803d, #16a34a);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 30px rgba(34, 197, 94, 0.45);
+    }
+
+    .form-control {
+        border-radius: 10px;
+        padding: 11px 16px;
+        border: 1px solid #cbd5e1;
+    }
+
+    .form-control:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+    }
+</style>
+
+<div class="container checkout-container">
+
+    <div class="text-center mb-5">
+        <h1 class="fw-bold">Checkout & Order Placement</h1>
+        <p class="text-muted">Complete your delivery information and confirm your simulated order.</p>
+    </div>
+
+    <form asp-action="Checkout" method="post">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-4">
+
+            <!-- Left Column: Forms -->
+            <div class="col-lg-7">
+
+                <!-- 1. Delivery Information -->
+                <div class="checkout-card">
+                    <div class="checkout-card-header">
+                        <i class="fa-solid fa-truck-fast"></i>
+                        <div>
+                            <h4>1. Delivery Information</h4>
+                            <small class="text-muted">Where should we deliver your order?</small>
+                        </div>
+                    </div>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="Name" class="form-label fw-semibold"></label>
+                            <input asp-for="Name" class="form-control" placeholder="e.g. John Doe" />
+                            <span asp-validation-for="Name" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PhoneNumber" class="form-label fw-semibold"></label>
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="e.g. +1 555-0199" />
+                            <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Address" class="form-label fw-semibold"></label>
+                            <input asp-for="Address" class="form-control" placeholder="Street address, apartment, suite" />
+                            <span asp-validation-for="Address" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="City" class="form-label fw-semibold"></label>
+                            <input asp-for="City" class="form-control" placeholder="e.g. New York" />
+                            <span asp-validation-for="City" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="PostalCode" class="form-label fw-semibold"></label>
+                            <input asp-for="PostalCode" class="form-control" placeholder="e.g. 10001" />
+                            <span asp-validation-for="PostalCode" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Payment Simulation -->
+                <div class="checkout-card">
+                    <div class="checkout-card-header">
+                        <i class="fa-solid fa-credit-card"></i>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h4>2. Payment Details</h4>
+                                <span class="payment-badge">
+                                    <i class="fa-solid fa-shield-halved"></i> Simulated Sandbox
+                                </span>
+                            </div>
+                            <small class="text-muted">Instant mock authorization (No real charge will occur)</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="CardHolderName" class="form-label fw-semibold"></label>
+                            <input asp-for="CardHolderName" class="form-control" placeholder="Cardholder Name" />
+                            <span asp-validation-for="CardHolderName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="CardNumber" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fa-brands fa-cc-visa text-primary"></i></span>
+                                <input asp-for="CardNumber" class="form-control" placeholder="4242 4242 4242 4242" />
+                            </div>
+                            <span asp-validation-for="CardNumber" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CardExpiration" class="form-label fw-semibold"></label>
+                            <input asp-for="CardExpiration" class="form-control" placeholder="MM/YY" />
+                            <span asp-validation-for="CardExpiration" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CardCvv" class="form-label fw-semibold"></label>
+                            <input asp-for="CardCvv" class="form-control" placeholder="123" />
+                            <span asp-validation-for="CardCvv" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Order Summary -->
+            <div class="col-lg-5">
+
+                <div class="summary-card">
+                    <h4 class="fw-bold mb-4 pb-2 border-bottom">
+                        <i class="fa-solid fa-bag-shopping text-primary me-2"></i>Order Summary
+                    </h4>
+
+                    <div class="summary-items-list mb-3" style="max-height: 280px; overflow-y: auto;">
+                        @foreach (var item in Model.CartItems)
+                        {
+                            <div class="summary-item">
+                                <img src="@Url.Content(string.IsNullOrWhiteSpace(item.ImageUrl) ? "~/Images/no-image.png" : "~/" + item.ImageUrl)"
+                                     alt="@item.ProductName" class="summary-item-img" onerror="this.src='/Images/no-image.png';" />
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 fw-semibold">@item.ProductName</h6>
+                                    <small class="text-muted">Qty: @item.Quantity × $@item.Price.ToString("N2")</small>
+                                </div>
+                                <div class="fw-bold text-end">
+                                    $@item.TotalPrice.ToString("N2")
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted">Subtotal</span>
+                        <span class="fw-semibold">$@Model.OrderTotal.ToString("N2")</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Shipping</span>
+                        <span class="text-success fw-semibold">Free</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between py-3 mb-4">
+                        <span class="h5 fw-bold mb-0">Total</span>
+                        <span class="h4 fw-bold text-primary mb-0">$@Model.OrderTotal.ToString("N2")</span>
+                    </div>
+
+                    <button type="submit" class="btn-place-order">
+                        <i class="fa-solid fa-lock me-2"></i> Place Order ($@Model.OrderTotal.ToString("N2"))
+                    </button>
+
+                    <div class="text-center mt-3">
+                        <small class="text-muted">
+                            <i class="fa-solid fa-shield-heart text-success me-1"></i>
+                            Guaranteed Safe & Secure Checkout
+                        </small>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
