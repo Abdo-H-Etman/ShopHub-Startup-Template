@@ -60,7 +60,7 @@ public class OrderController : Controller
             Address = user.Address ?? string.Empty,
             City = user.City ?? string.Empty,
             CartItems = cart,
-            OrderTotal = _cartService.GetCartTotal()
+            OrderTotal = _cartService.GetCartTotal(cart)
         };
 
         ViewBag.StripePublishableKey =
@@ -144,7 +144,7 @@ public class OrderController : Controller
             });
         }
 
-        var total = _cartService.GetCartTotal();
+        var total = _cartService.GetCartTotal(cart);
 
         if (total <= 0)
         {
@@ -247,7 +247,7 @@ public class OrderController : Controller
             });
         }
 
-        var expectedTotal = _cartService.GetCartTotal();
+        var expectedTotal = _cartService.GetCartTotal(cart);
 
         var expectedAmount =
             (long)Math.Round(
