@@ -5,13 +5,12 @@ using myshop.BLL.Interfaces;
 using myshop.BLL.Mapping;
 using myshop.BLL.Services;
 using myshop.BLL.Stripe;
+using myshop.DAL;
 using myshop.DataAccess;
 using myshop.Entities.Models;
 using myshop.Web.Mapping;
 using myshop.Web.Seed;
 using myshop.Web.Services;
-using Repositories;
-using Repositories.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +18,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages().AddRazorRuntimeCompilation();
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"))
-);
+builder.Services.AddDataAccessLayer(builder.Configuration);
 
 builder.Services.AddIdentity<ApplicationUser, IdentityRole<int>>(options =>
     {
@@ -61,9 +58,6 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 
 builder.Services.Configure<StripeSettings>(
     builder.Configuration.GetSection("Stripe"));
-// Register Repositories and Unit of Work
-builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 // Register Application Services
 builder.Services.AddScoped<ICategoryService, CategoryService>();
@@ -87,12 +81,10 @@ builder.Services.AddAutoMapper(configAction =>
 
 var app = builder.Build();
 
-// Database Migration and Data Seeding
+await app.Services.ApplyMigrationsAsync();
+
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();
-
     var seeder = scope.ServiceProvider.GetRequiredService<InitialDataSeeder>();
     await seeder.SeedAsync();
 }
