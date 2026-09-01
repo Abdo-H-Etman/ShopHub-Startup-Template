@@ -16,7 +16,7 @@ public interface ICartService
 
     void ClearCart();
 
-    decimal GetCartTotal();
+    decimal GetCartTotal(List<CartItem> cart);
 
     void MigrateGuestCart(string userId);
 }

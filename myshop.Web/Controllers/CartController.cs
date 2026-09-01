@@ -49,7 +49,7 @@ public class CartController : Controller
         if (IsAjaxRequest())
         {
             var cart = _cartService.GetCart();
-            var cartTotal = _cartService.GetCartTotal();
+            var cartTotal = _cartService.GetCartTotal(cart);
             return Json(new
             {
                 success = true,
@@ -73,7 +73,7 @@ public class CartController : Controller
         {
             var cart = _cartService.GetCart();
             var item = cart.FirstOrDefault(x => x.ProductId == productId);
-            var cartTotal = _cartService.GetCartTotal();
+            var cartTotal = _cartService.GetCartTotal(cart);
             return Json(new
             {
                 success = true,
@@ -100,7 +100,7 @@ public class CartController : Controller
         {
             var cart = _cartService.GetCart();
             var item = cart.FirstOrDefault(x => x.ProductId == productId);
-            var cartTotal = _cartService.GetCartTotal();
+            var cartTotal = _cartService.GetCartTotal(cart);
             return Json(new
             {
                 success = true,

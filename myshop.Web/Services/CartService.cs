@@ -1,5 +1,4 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using myshop.BLL.DTOs.Cart;
 using myshop.BLL.Services;
 
@@ -17,7 +16,7 @@ public class CartService : ICartService
             var user = _httpContextAccessor.HttpContext?.User;
             if (user?.Identity?.IsAuthenticated == true)
             {
-                var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value 
+                var userId = user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
                              ?? user.Identity.Name;
                 return $"ShoppingCart_User_{userId}";
             }
@@ -143,9 +142,9 @@ public class CartService : ICartService
         Session.Remove(CartSessionKey);
     }
 
-    public decimal GetCartTotal()
+    public decimal GetCartTotal(List<CartItem> cart)
     {
-        return GetCart().Sum(x => x.Price * x.Quantity);
+        return cart.Sum(x => x.Price * x.Quantity);
     }
 
     public void MigrateGuestCart(string userId)
