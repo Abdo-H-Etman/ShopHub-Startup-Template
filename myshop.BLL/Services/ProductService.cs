@@ -1,13 +1,10 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using AutoMapper;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using myshop.BLL.DTOs;
 using myshop.BLL.DTOs.Common;
 using myshop.BLL.DTOs.Product;
+using myshop.DAL.Services;
 using myshop.Entities.Models;
 using Repositories.Interfaces;
 
@@ -18,12 +15,14 @@ public class ProductService : IProductService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IMapper _mapper;
     private readonly IFileService _fileService;
+    private readonly IImageValidationService _imageValidationService;
 
-    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IFileService fileService)
+    public ProductService(IUnitOfWork unitOfWork, IMapper mapper, IFileService fileService, IImageValidationService imageValidationService)
     {
         _unitOfWork = unitOfWork;
         _mapper = mapper;
         _fileService = fileService;
+        _imageValidationService = imageValidationService;
     }
 
     public async Task<IEnumerable<ProductListDto>> GetAllAsync()
@@ -108,11 +107,18 @@ public class ProductService : IProductService
         return _mapper.Map<UpdateProductDto>(product);
     }
 
-    public async Task CreateAsync(CreateProductDto dto, IFormFile? file)
+    public async Task CreateAsync(CreateProductDto dto, ImageUpload? image, CancellationToken cancellationToken = default)
     {
-        if (file is not null)
+        if (image is not null)
         {
-            dto.Img = await _fileService.SaveFileAsync(file);
+            var validationResult = _imageValidationService.IsValid(image.FileName, image.Length);
+
+            if (!validationResult.isValid)
+            {
+                throw new ArgumentException(validationResult.errorMessage);
+            }
+
+            dto.Img = await _fileService.SaveFileAsync(image.FileName, image.Content, cancellationToken);
         }
 
         var product = _mapper.Map<Product>(dto);
@@ -121,7 +127,7 @@ public class ProductService : IProductService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task UpdateAsync(int id, UpdateProductDto dto, IFormFile? file)
+    public async Task UpdateAsync(int id, UpdateProductDto dto, ImageUpload? image, CancellationToken cancellationToken = default)
     {
         var existingProduct = await _unitOfWork.Products.FirstOrDefaultAsync(p => p.Id == id);
         if (existingProduct is null)
@@ -129,10 +135,17 @@ public class ProductService : IProductService
             throw new InvalidOperationException("Product not found.");
         }
 
-        if (file is not null)
+        if (image is not null)
         {
-            _fileService.DeleteFile(existingProduct.Img);
-            dto.Img = await _fileService.SaveFileAsync(file);
+            await _fileService.DeleteAsync(existingProduct.Img, cancellationToken);
+
+            var validationResult = _imageValidationService.IsValid(image.FileName, image.Length);
+
+            if (!validationResult.isValid)
+            {
+                throw new ArgumentException(validationResult.errorMessage);
+            }
+            dto.Img = await _fileService.SaveFileAsync(image.FileName, image.Content, cancellationToken);
         }
         else
         {

@@ -2,6 +2,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using myshop.BLL.DTOs;
 using myshop.BLL.DTOs.Product;
 using myshop.BLL.Services;
 using myshop.Entities.Models;
@@ -70,7 +71,17 @@ public class ProductController : Controller
         try
         {
             CreateProductDto createProduct = _mapper.Map<CreateProductDto>(productVM.Product);
-            await _productService.CreateAsync(createProduct, file);
+            ImageUpload? imageUpload = null;
+            if (file is not null)
+            {
+                imageUpload = new ImageUpload
+                {
+                    FileName = file.FileName,
+                    Length = file.Length,
+                    Content = file.OpenReadStream()
+                };
+            }
+            await _productService.CreateAsync(createProduct, imageUpload);
 
             TempData["Create"] = "Product has been created successfully.";
             return RedirectToAction("Index");
@@ -117,7 +128,17 @@ public class ProductController : Controller
 
         try
         {
-            await _productService.UpdateAsync(productVM.Product.Id, productVM.Product, file);
+            ImageUpload? imageUpload = null;
+            if (file is not null)
+            {
+                imageUpload = new ImageUpload
+                {
+                    FileName = file.FileName,
+                    Length = file.Length,
+                    Content = file.OpenReadStream()
+                };
+            }
+            await _productService.UpdateAsync(productVM.Product.Id, productVM.Product, imageUpload);
             TempData["Update"] = "Product has been updated successfully.";
             return RedirectToAction("Index");
         }

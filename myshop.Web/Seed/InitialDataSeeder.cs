@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using myshop.BLL.DTOs.Category;
 using myshop.BLL.DTOs.Product;
 using myshop.BLL.Services;
+using myshop.DAL.Services;
 using myshop.Entities.Models;
 
 namespace myshop.Web.Seed;
@@ -135,23 +136,23 @@ public class InitialDataSeeder
 
         if (!products.Any())
         {
-            var smartPhoneImg = await _fileService.CopyFileAsync("Images/Products/5f4d61ba-5f02-4a22-8305-1148a341710f.jpg");
+            var smartPhoneImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/5f4d61ba-5f02-4a22-8305-1148a341710f.jpg");
 
-            var IPhoneImg = await _fileService.CopyFileAsync("Images/Products/e6c4961b-1c83-4da0-bf6d-f6c4901fb9b9.jpeg");
+            var IPhoneImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/e6c4961b-1c83-4da0-bf6d-f6c4901fb9b9.jpeg");
 
-            var laptopImg = await _fileService.CopyFileAsync("Images/Products/42af8ba8-65df-417b-908c-ffb6cfcdfc0c.jpg");
+            var laptopImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/42af8ba8-65df-417b-908c-ffb6cfcdfc0c.jpg");
 
-            var mouseImg = await _fileService.CopyFileAsync("Images/Products/927524ce-cf58-4eea-9e36-d29b9edc539a.jpg");
+            var mouseImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/927524ce-cf58-4eea-9e36-d29b9edc539a.jpg");
 
-            var barcaShirtImg = await _fileService.CopyFileAsync("Images/Products/eb1e8683-8559-4957-92c0-773fd02e4c7c.jpg");
+            var barcaShirtImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/eb1e8683-8559-4957-92c0-773fd02e4c7c.jpg");
 
-            var screenImg = await _fileService.CopyFileAsync("Images/Products/02a7ea31-1096-4acc-99ad-d708a75c6688.jpg");
+            var screenImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/02a7ea31-1096-4acc-99ad-d708a75c6688.jpg");
 
-            var airConditionerImg = await _fileService.CopyFileAsync("Images/Products/035afc1e-b77f-4b5b-9eb7-7d7991bea349.jpg");
+            var airConditionerImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/035afc1e-b77f-4b5b-9eb7-7d7991bea349.jpg");
 
-            var ShoesImg = await _fileService.CopyFileAsync("Images/Products/79e1b43f-7bc5-4019-9d0c-409a0275d0b9.jpg");
+            var ShoesImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/79e1b43f-7bc5-4019-9d0c-409a0275d0b9.jpg");
 
-            var RealShirtImg = await _fileService.CopyFileAsync("Images/Products/d5033c93-add3-40bc-85f5-020363626720.jpg");
+            var RealShirtImg = await _fileService.CopyFileAsync("wwwroot/Images/Products/d5033c93-add3-40bc-85f5-020363626720.jpg");
 
             var categories = await _categoryService.GetAllAsync();
 
