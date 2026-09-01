@@ -16,16 +16,16 @@ public class OrderController : Controller
     }
 
     // GET: /Admin/Order/Index  — All orders list
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken = default)
     {
-        var orders = await _orderService.GetAllOrdersAsync();
+        var orders = await _orderService.GetAllOrdersAsync(cancellationToken);
         return View(orders);
     }
 
     // GET: /Admin/Order/Details/{id}
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
     {
-        var order = await _orderService.GetOrderDetailsAsync(id);
+        var order = await _orderService.GetOrderDetailsAsync(id, cancellationToken: cancellationToken);
         if (order == null)
             return NotFound();
 
@@ -35,9 +35,11 @@ public class OrderController : Controller
     // POST: /Admin/Order/UpdateStatus
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateStatus(int orderId, string orderStatus, string? paymentStatus, string? trackingNumber, string? carrier)
+    public async Task<IActionResult> UpdateStatus(int orderId, string orderStatus, string? paymentStatus,
+        string? trackingNumber, string? carrier, CancellationToken cancellationToken = default)
     {
-        var success = await _orderService.UpdateOrderStatusAsync(orderId, orderStatus, paymentStatus);
+        var success = await _orderService.UpdateOrderStatusAsync(orderId, orderStatus, paymentStatus,
+            cancellationToken: cancellationToken);
         if (success)
             TempData["Success"] = $"Order #{orderId} status updated successfully.";
         else
@@ -48,9 +50,9 @@ public class OrderController : Controller
 
     // GET: /Admin/Order/GetAllOrdersData  — JSON for DataTable
     [HttpGet]
-    public async Task<IActionResult> GetAllOrdersData()
+    public async Task<IActionResult> GetAllOrdersData(CancellationToken cancellationToken = default)
     {
-        var orders = await _orderService.GetAllOrdersAsync();
+        var orders = await _orderService.GetAllOrdersAsync(cancellationToken);
         return Json(new { data = orders });
     }
 }

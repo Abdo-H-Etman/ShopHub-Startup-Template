@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using myshop.DataAccess;
 using myshop.Entities.Models.Interfaces;
@@ -21,7 +17,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         _dbSet = _context.Set<T>();
     }
 
-    public async Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? include = null, bool ignoreQueryFilters = false)
+    public async Task<IEnumerable<T>> GetAllAsync(Func<IQueryable<T>, IQueryable<T>>? include = null, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
     {
         IQueryable<T> query = _dbSet.AsNoTracking();
 
@@ -35,23 +31,24 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             query = include(query);
         }
 
-        return await query.ToListAsync();
+        return await query.ToListAsync(cancellationToken);
     }
 
-    public async Task<T?> GetByIdAsync(int id, bool ignoreQueryFilters = false)
+    public async Task<T?> GetByIdAsync(int id, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
     {
         if (ignoreQueryFilters)
         {
-            return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+            return await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
         }
 
-        return await _dbSet.FindAsync(id);
+        return await _dbSet.FindAsync(new object[] { id }, cancellationToken);
     }
 
     public async Task<T?> FirstOrDefaultAsync(
         Expression<Func<T, bool>> predicate,
         Func<IQueryable<T>, IQueryable<T>>? include = null,
-        bool ignoreQueryFilters = false)
+        bool ignoreQueryFilters = false,
+        CancellationToken cancellationToken = default)
     {
         IQueryable<T> query = _dbSet.AsNoTracking();
 
@@ -65,7 +62,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             query = include(query);
         }
 
-        return await query.FirstOrDefaultAsync(predicate);
+        return await query.FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
     public async Task<(IEnumerable<T> Items, int TotalCount)> GetPagedAsync(
@@ -74,7 +71,8 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         Expression<Func<T, bool>>? predicate = null,
         Func<IQueryable<T>, IQueryable<T>>? include = null,
         Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
-        bool ignoreQueryFilters = false)
+        bool ignoreQueryFilters = false,
+        CancellationToken cancellationToken = default)
     {
         if (pageNumber < 1)
             pageNumber = 1;
@@ -94,7 +92,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             query = query.Where(predicate);
         }
 
-        int totalCount = await query.CountAsync();
+        int totalCount = await query.CountAsync(cancellationToken);
 
         if (include != null)
         {
@@ -106,29 +104,29 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
             query = orderBy(query);
         }
 
-        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync();
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
 
         return (items, totalCount);
     }
 
-    public async Task AddAsync(T entity) =>
-        await _dbSet.AddAsync(entity);
+    public async Task AddAsync(T entity, CancellationToken cancellationToken = default) =>
+        await _dbSet.AddAsync(entity, cancellationToken);
 
-    public async Task UpdateAsync(T entity) =>
+    public async Task UpdateAsync(T entity, CancellationToken cancellationToken = default) =>
         _dbSet.Update(entity);
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbSet.FindAsync(id);
+        var entity = await _dbSet.FindAsync([id], cancellationToken);
         if (entity != null)
         {
             _dbSet.Remove(entity);
         }
     }
 
-    public async Task RestoreAsync(int id)
+    public async Task RestoreAsync(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id);
+        var entity = await _dbSet.IgnoreQueryFilters().FirstOrDefaultAsync(e => EF.Property<int>(e, "Id") == id, cancellationToken);
         if (entity is ISoftDeletable softDeletable)
         {
             softDeletable.IsDeleted = false;

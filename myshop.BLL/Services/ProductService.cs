@@ -25,23 +25,24 @@ public class ProductService : IProductService
         _imageValidationService = imageValidationService;
     }
 
-    public async Task<IEnumerable<ProductListDto>> GetAllAsync()
+    public async Task<IEnumerable<ProductListDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
-        var products = await _unitOfWork.Products.GetAllAsync(q => q.Include(x => x.Category).Include(x => x.Reviews));
+        var products = await _unitOfWork.Products.GetAllAsync(q => q.Include(x => x.Category).Include(x => x.Reviews), cancellationToken: cancellationToken);
         return _mapper.Map<IEnumerable<ProductListDto>>(products);
     }
 
-    public async Task<IEnumerable<ProductListDto>> GetArchivedAsync()
+    public async Task<IEnumerable<ProductListDto>> GetArchivedAsync(CancellationToken cancellationToken = default)
     {
         var products = await _unitOfWork.Products.GetAllAsync(
             q => q.Where(p => p.IsDeleted).Include(x => x.Category).Include(x => x.Reviews),
-            ignoreQueryFilters: true
+            ignoreQueryFilters: true,
+            cancellationToken: cancellationToken
         );
 
         return _mapper.Map<IEnumerable<ProductListDto>>(products);
     }
 
-    public async Task<PagedResultDto<ProductListDto>> GetPagedAsync(int pageNumber, int pageSize, string? search, string? sort)
+    public async Task<PagedResultDto<ProductListDto>> GetPagedAsync(int pageNumber, int pageSize, string? search, string? sort, CancellationToken cancellationToken = default)
     {
         pageNumber = Math.Max(pageNumber, 1);
         pageSize = Math.Clamp(pageSize, 1, 50);
@@ -69,7 +70,8 @@ public class ProductService : IProductService
             pageSize,
             predicate,
             q => q.Include(p => p.Category).Include(p => p.Reviews),
-            orderBy
+            orderBy,
+            cancellationToken: cancellationToken
         );
 
         var result = new PagedResultDto<ProductListDto>
@@ -83,11 +85,12 @@ public class ProductService : IProductService
         return result;
     }
 
-    public async Task<ProductListDto?> GetByIdAsync(int id)
+    public async Task<ProductListDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
         var product = await _unitOfWork.Products.FirstOrDefaultAsync(
             p => p.Id == id,
-            q => q.Include(x => x.Category).Include(x => x.Reviews)
+            q => q.Include(x => x.Category).Include(x => x.Reviews),
+            cancellationToken: cancellationToken
         );
 
         if (product is null) return null;
@@ -95,11 +98,12 @@ public class ProductService : IProductService
         return _mapper.Map<ProductListDto>(product);
     }
 
-    public async Task<UpdateProductDto?> GetByIdForUpdateAsync(int id)
+    public async Task<UpdateProductDto?> GetByIdForUpdateAsync(int id, CancellationToken cancellationToken = default)
     {
         var product = await _unitOfWork.Products.FirstOrDefaultAsync(
             p => p.Id == id,
-            q => q.Include(x => x.Category)
+            q => q.Include(x => x.Category),
+            cancellationToken: cancellationToken
         );
 
         if (product is null) return null;
@@ -159,21 +163,21 @@ public class ProductService : IProductService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await _unitOfWork.Products.GetByIdAsync(id);
+        var product = await _unitOfWork.Products.GetByIdAsync(id, cancellationToken: cancellationToken);
         if (product is null)
         {
             throw new InvalidOperationException("Product not found.");
         }
 
-        await _unitOfWork.Products.DeleteAsync(id);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Products.DeleteAsync(id, cancellationToken: cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken: cancellationToken);
     }
 
-    public async Task RestoreAsync(int id)
+    public async Task RestoreAsync(int id, CancellationToken cancellationToken = default)
     {
-        await _unitOfWork.Products.RestoreAsync(id);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Products.RestoreAsync(id, cancellationToken: cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken: cancellationToken);
     }
 }

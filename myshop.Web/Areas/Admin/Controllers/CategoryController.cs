@@ -16,9 +16,9 @@ public class CategoryController : Controller
         _categoryService = categoryService;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(CancellationToken cancellationToken = default)
     {
-        var categories = await _categoryService.GetAllAsync();
+        var categories = await _categoryService.GetAllAsync(cancellationToken: cancellationToken);
         return View(categories.ToList());
     }
 
@@ -29,11 +29,11 @@ public class CategoryController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(CreateCategoryDto category)
+    public async Task<IActionResult> Create(CreateCategoryDto category, CancellationToken cancellationToken = default)
     {
         if (ModelState.IsValid)
         {
-            await _categoryService.CreateAsync(category);
+            await _categoryService.CreateAsync(category, cancellationToken: cancellationToken);
             TempData["Create"] = "Item has Created Successfully";
             return RedirectToAction("Index");
         }
@@ -41,14 +41,14 @@ public class CategoryController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(int? id)
+    public async Task<IActionResult> Edit(int? id, CancellationToken cancellationToken = default)
     {
         if (id == null || id == 0)
         {
             return NotFound();
         }
 
-        var category = await _categoryService.GetByIdForUpdateAsync(id.Value);
+        var category = await _categoryService.GetByIdForUpdateAsync(id.Value, cancellationToken: cancellationToken);
         if (category == null)
         {
             return NotFound();
@@ -58,11 +58,11 @@ public class CategoryController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(UpdateCategoryDto category)
+    public async Task<IActionResult> Edit(UpdateCategoryDto category, CancellationToken cancellationToken = default)
     {
         if (ModelState.IsValid)
         {
-            await _categoryService.UpdateAsync(category);
+            await _categoryService.UpdateAsync(category, cancellationToken: cancellationToken);
             TempData["Update"] = "Data has Updated Successfully";
             return RedirectToAction("Index");
         }
@@ -70,14 +70,14 @@ public class CategoryController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Delete(int? id)
+    public async Task<IActionResult> Delete(int? id, CancellationToken cancellationToken = default)
     {
         if (id == null || id == 0)
         {
             return NotFound();
         }
 
-        var category = await _categoryService.GetByIdAsync(id.Value);
+        var category = await _categoryService.GetByIdAsync(id.Value, cancellationToken: cancellationToken);
         if (category == null)
         {
             return NotFound();
@@ -87,20 +87,20 @@ public class CategoryController : Controller
     }
 
     [HttpDelete]
-    public async Task<IActionResult> DeleteAjax(int? id)
+    public async Task<IActionResult> DeleteAjax(int? id, CancellationToken cancellationToken = default)
     {
         if (id == null || id == 0)
         {
             return Json(new { success = false, message = "Invalid category id." });
         }
 
-        var category = await _categoryService.GetByIdAsync(id.Value);
+        var category = await _categoryService.GetByIdAsync(id.Value, cancellationToken: cancellationToken);
         if (category == null)
         {
             return Json(new { success = false, message = "Category not found." });
         }
 
-        await _categoryService.DeleteAsync(id.Value);
+        await _categoryService.DeleteAsync(id.Value, cancellationToken: cancellationToken);
         return Json(new { success = true, message = "Category deleted successfully." });
     }
 }

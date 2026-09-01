@@ -1,6 +1,3 @@
-using System;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +21,7 @@ public class ReviewController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Add(CreateReviewDto model)
+    public async Task<IActionResult> Add(CreateReviewDto model, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -40,7 +37,7 @@ public class ReviewController : Controller
 
         try
         {
-            await _reviewService.AddReviewAsync(user.Id, model);
+            await _reviewService.AddReviewAsync(user.Id, model, cancellationToken: cancellationToken);
             TempData["Success"] = "Thank you! Your review has been submitted.";
         }
         catch (InvalidOperationException ex)
@@ -57,7 +54,7 @@ public class ReviewController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(UpdateReviewDto model)
+    public async Task<IActionResult> Edit(UpdateReviewDto model, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -73,7 +70,7 @@ public class ReviewController : Controller
 
         try
         {
-            await _reviewService.UpdateReviewAsync(user.Id, model);
+            await _reviewService.UpdateReviewAsync(user.Id, model, cancellationToken: cancellationToken);
             TempData["Success"] = "Your review has been updated.";
         }
         catch (Exception ex)
@@ -86,7 +83,7 @@ public class ReviewController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(int id, int productId)
+    public async Task<IActionResult> Delete(int id, int productId, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -96,7 +93,7 @@ public class ReviewController : Controller
 
         try
         {
-            var isDeleted = await _reviewService.DeleteReviewAsync(user.Id, id, User.IsInRole("Admin"));
+            var isDeleted = await _reviewService.DeleteReviewAsync(user.Id, id, User.IsInRole("Admin"), cancellationToken: cancellationToken);
             if (isDeleted)
             {
                 TempData["Success"] = "Your review has been deleted.";

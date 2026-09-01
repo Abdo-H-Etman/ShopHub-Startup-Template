@@ -31,13 +31,15 @@ public class ProductController : Controller
         int pageNumber = 1,
         int pageSize = 8,
         string? search = null,
-        string? sort = "nameasc")
+        string? sort = "nameasc",
+        CancellationToken cancellationToken = default)
     {
         var result = await _productService.GetPagedAsync(
             pageNumber,
             pageSize,
             search,
-            sort);
+            sort,
+            cancellationToken: cancellationToken);
 
         var vm = new ProductIndexVM
         {
@@ -58,9 +60,9 @@ public class ProductController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
     {
-        var product = await _productService.GetByIdAsync(id);
+        var product = await _productService.GetByIdAsync(id, cancellationToken: cancellationToken);
         if (product == null)
         {
             return NotFound();
@@ -76,13 +78,13 @@ public class ProductController : Controller
             }
         }
 
-        var ratingSummary = await _reviewService.GetProductRatingSummaryAsync(id);
-        var reviews = (await _reviewService.GetProductReviewsAsync(id, currentUserId)).ToList();
+        var ratingSummary = await _reviewService.GetProductRatingSummaryAsync(id, cancellationToken: cancellationToken);
+        var reviews = (await _reviewService.GetProductReviewsAsync(id, currentUserId, cancellationToken: cancellationToken)).ToList();
 
         ReviewDto? userReview = null;
         if (currentUserId.HasValue)
         {
-            userReview = await _reviewService.GetUserReviewForProductAsync(id, currentUserId.Value);
+            userReview = await _reviewService.GetUserReviewForProductAsync(id, currentUserId.Value, cancellationToken: cancellationToken);
         }
 
         var vm = new ProductDetailsVM

@@ -69,7 +69,7 @@ public class OrderController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> OrderConfirmation(int id)
+    public async Task<IActionResult> OrderConfirmation(int id, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -77,7 +77,7 @@ public class OrderController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var order = await _orderService.GetOrderDetailsAsync(id, user.Id);
+        var order = await _orderService.GetOrderDetailsAsync(id, user.Id, cancellationToken: cancellationToken);
         if (order == null)
         {
             return NotFound();
@@ -87,7 +87,8 @@ public class OrderController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10, string sort = "datedesc")
+    public async Task<IActionResult> Index(int pageNumber = 1, int pageSize = 10, string sort = "datedesc",
+        CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -95,7 +96,8 @@ public class OrderController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var orders = await _orderService.GetPagedUserOrdersAsync(user.Id, pageNumber, pageSize, sort);
+        var orders = await _orderService.GetPagedUserOrdersAsync(user.Id, pageNumber, pageSize, sort,
+            cancellationToken: cancellationToken);
 
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
         {
@@ -106,7 +108,7 @@ public class OrderController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
         if (user == null)
@@ -114,7 +116,7 @@ public class OrderController : Controller
             return RedirectToAction("Login", "Account");
         }
 
-        var order = await _orderService.GetOrderDetailsAsync(id, user.Id);
+        var order = await _orderService.GetOrderDetailsAsync(id, user.Id, cancellationToken: cancellationToken);
         if (order == null)
         {
             return NotFound();
@@ -180,7 +182,7 @@ public class OrderController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> FinalizePayment(
-    [FromBody] FinalizePaymentRequest request)
+    [FromBody] FinalizePaymentRequest request, CancellationToken cancellationToken = default)
     {
         var user = await _userManager.GetUserAsync(User);
 
@@ -284,7 +286,8 @@ public class OrderController : Controller
                 await _orderService.CreateOrderAsync(
                     user.Id,
                     orderDto,
-                    cart);
+                    cart,
+                    cancellationToken: cancellationToken);
 
             // Email ONLY after successful Stripe payment
             if (!string.IsNullOrWhiteSpace(user.Email))

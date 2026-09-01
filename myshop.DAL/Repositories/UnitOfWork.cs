@@ -1,6 +1,3 @@
-using System;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using myshop.DataAccess;
 using myshop.Entities.Models;
@@ -26,24 +23,24 @@ public class UnitOfWork : IUnitOfWork
     public IGenericRepository<Review> Reviews => _serviceProvider.GetRequiredService<IGenericRepository<Review>>();
     public IGenericRepository<ShoppingCart> ShoppingCarts => _serviceProvider.GetRequiredService<IGenericRepository<ShoppingCart>>();
 
-    public async Task<int> SaveChangesAsync()
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
         if (_context.Database.CurrentTransaction is not null)
         {
-            return await _context.SaveChangesAsync();
+            return await _context.SaveChangesAsync(cancellationToken);
         }
 
-        using var transaction = await _context.Database.BeginTransactionAsync();
+        using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
 
         try
         {
-            var result = await _context.SaveChangesAsync();
-            await transaction.CommitAsync();
+            var result = await _context.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
             return result;
         }
         catch
         {
-            await transaction.RollbackAsync();
+            await transaction.RollbackAsync(cancellationToken);
             throw;
         }
     }

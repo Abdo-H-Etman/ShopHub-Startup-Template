@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using myshop.Entities.Models;
 
 namespace Repositories.Interfaces;
@@ -11,5 +10,5 @@ public interface IUnitOfWork
     IGenericRepository<OrderDetail> OrderDetails { get; }
     IGenericRepository<Review> Reviews { get; }
     IGenericRepository<ShoppingCart> ShoppingCarts { get; }
-    Task<int> SaveChangesAsync();
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

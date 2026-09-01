@@ -26,7 +26,8 @@ public class OrderService : IOrderService
     public async Task<OrderHeaderDto> CreateOrderAsync(
     int userId,
     OrderCreateDto orderCreateDto,
-    List<CartItem> cartItems)
+    List<CartItem> cartItems,
+    CancellationToken cancellationToken = default)
     {
         if (cartItems == null || !cartItems.Any())
         {
@@ -63,9 +64,9 @@ public class OrderService : IOrderService
             PaymentIntentId = orderCreateDto.PaymentIntentId
         };
 
-        await _unitOfWork.OrderHeaders.AddAsync(orderHeader);
+        await _unitOfWork.OrderHeaders.AddAsync(orderHeader, cancellationToken);
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         foreach (var item in cartItems)
         {
@@ -77,15 +78,15 @@ public class OrderService : IOrderService
                 Count = item.Quantity
             };
 
-            await _unitOfWork.OrderDetails.AddAsync(orderDetail);
+            await _unitOfWork.OrderDetails.AddAsync(orderDetail, cancellationToken);
         }
 
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return (await GetOrderDetailsAsync(orderHeader.Id))!;
+        return (await GetOrderDetailsAsync(orderHeader.Id, cancellationToken: cancellationToken))!;
     }
     public async Task<PagedResultDto<OrderSummaryDto>> GetPagedUserOrdersAsync(int userId, int pageNumber,
-                int pageSize, string? sort)
+                int pageSize, string? sort, CancellationToken cancellationToken = default)
     {
         Func<IQueryable<OrderHeader>, IOrderedQueryable<OrderHeader>> orderBy =
             sort?.ToLower() switch
@@ -100,7 +101,8 @@ public class OrderService : IOrderService
             pageNumber, pageSize,
             o => o.ApplicationUserId == userId,
             q => q.Include(o => o.OrderDetails),
-            orderBy
+            orderBy,
+            cancellationToken: cancellationToken
         );
 
         var result = new PagedResultDto<OrderSummaryDto>
@@ -122,13 +124,15 @@ public class OrderService : IOrderService
         return result;
     }
 
-    public async Task<OrderHeaderDto?> GetOrderDetailsAsync(int orderId, int? userId = null)
+    public async Task<OrderHeaderDto?> GetOrderDetailsAsync(int orderId, int? userId = null,
+        CancellationToken cancellationToken = default)
     {
         var order = await _unitOfWork.OrderHeaders.FirstOrDefaultAsync(
             o => o.Id == orderId,
             q => q.Include(o => o.ApplicationUser)
                   .Include(o => o.OrderDetails)
-                  .ThenInclude(d => d.Product)
+                  .ThenInclude(d => d.Product),
+            cancellationToken: cancellationToken
         );
 
         if (order == null)
@@ -168,11 +172,12 @@ public class OrderService : IOrderService
         };
     }
 
-    public async Task<IEnumerable<OrderSummaryDto>> GetAllOrdersAsync()
+    public async Task<IEnumerable<OrderSummaryDto>> GetAllOrdersAsync(CancellationToken cancellationToken = default)
     {
         var orders = await _unitOfWork.OrderHeaders.GetAllAsync(
             q => q.Include(o => o.OrderDetails)
-                  .OrderByDescending(o => o.OrderDate)
+                  .OrderByDescending(o => o.OrderDate),
+            cancellationToken: cancellationToken
         );
 
         return orders.Select(o => new OrderSummaryDto
@@ -186,7 +191,8 @@ public class OrderService : IOrderService
         }).ToList();
     }
 
-    public async Task<OrderHeaderDto?> GetOrderByPaymentIntentIdAsync(string paymentIntentId, int userId)
+    public async Task<OrderHeaderDto?> GetOrderByPaymentIntentIdAsync(string paymentIntentId, int userId,
+        CancellationToken cancellationToken = default)
     {
         var order = await _unitOfWork.OrderHeaders.FirstOrDefaultAsync(
             o =>
@@ -195,7 +201,8 @@ public class OrderService : IOrderService
             q => q
                 .Include(o => o.ApplicationUser)
                 .Include(o => o.OrderDetails)
-                .ThenInclude(d => d.Product));
+                .ThenInclude(d => d.Product),
+            cancellationToken: cancellationToken);
 
         if (order == null)
         {
@@ -204,11 +211,13 @@ public class OrderService : IOrderService
 
         return await GetOrderDetailsAsync(
             order.Id,
-            userId);
+            userId,
+            cancellationToken);
     }
-    public async Task<bool> UpdateOrderStatusAsync(int orderId, string orderStatus, string? paymentStatus = null)
+    public async Task<bool> UpdateOrderStatusAsync(int orderId, string orderStatus, string? paymentStatus = null,
+        CancellationToken cancellationToken = default)
     {
-        var order = await _unitOfWork.OrderHeaders.GetByIdAsync(orderId);
+        var order = await _unitOfWork.OrderHeaders.GetByIdAsync(orderId, cancellationToken: cancellationToken);
         if (order == null)
             return false;
 
@@ -223,8 +232,8 @@ public class OrderService : IOrderService
             order.ShippingDate = DateTime.UtcNow;
         }
 
-        await _unitOfWork.OrderHeaders.UpdateAsync(order);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.OrderHeaders.UpdateAsync(order, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
         return true;
     }
 }

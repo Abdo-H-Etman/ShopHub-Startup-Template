@@ -21,7 +21,7 @@ public class CategoryService : ICategoryService
         _cache = cache;
     }
 
-    public async Task<IEnumerable<CategoryListDto>> GetAllAsync()
+    public async Task<IEnumerable<CategoryListDto>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         if (_cache.TryGetValue(
             CategoriesCacheKey,
@@ -29,7 +29,7 @@ public class CategoryService : ICategoryService
         {
             return cachedCategories!;
         }
-        var categories = await _unitOfWork.Categories.GetAllAsync();
+        var categories = await _unitOfWork.Categories.GetAllAsync(cancellationToken: cancellationToken);
 
         var categoryDtos =
         _mapper.Map<IEnumerable<CategoryListDto>>(categories);
@@ -47,40 +47,40 @@ public class CategoryService : ICategoryService
         return categoryDtos;
     }
 
-    public async Task<CategoryListDto?> GetByIdAsync(int id)
+    public async Task<CategoryListDto?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        var category = await _unitOfWork.Categories.GetByIdAsync(id);
+        var category = await _unitOfWork.Categories.GetByIdAsync(id, cancellationToken: cancellationToken);
         return category is null ? null : _mapper.Map<CategoryListDto>(category);
     }
 
-    public async Task<UpdateCategoryDto?> GetByIdForUpdateAsync(int id)
+    public async Task<UpdateCategoryDto?> GetByIdForUpdateAsync(int id, CancellationToken cancellationToken = default)
     {
-        var category = await _unitOfWork.Categories.GetByIdAsync(id);
+        var category = await _unitOfWork.Categories.GetByIdAsync(id, cancellationToken: cancellationToken);
         return category is null ? null : _mapper.Map<UpdateCategoryDto>(category);
     }
 
-    public async Task CreateAsync(CreateCategoryDto dto)
+    public async Task CreateAsync(CreateCategoryDto dto, CancellationToken cancellationToken = default)
     {
         var category = _mapper.Map<Category>(dto);
-        await _unitOfWork.Categories.AddAsync(category);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Categories.AddAsync(category, cancellationToken: cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken: cancellationToken);
 
         _cache.Remove(CategoriesCacheKey);
     }
 
-    public async Task UpdateAsync(UpdateCategoryDto dto)
+    public async Task UpdateAsync(UpdateCategoryDto dto, CancellationToken cancellationToken = default)
     {
         var category = _mapper.Map<Category>(dto);
-        await _unitOfWork.Categories.UpdateAsync(category);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Categories.UpdateAsync(category, cancellationToken: cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken: cancellationToken);
 
         _cache.Remove(CategoriesCacheKey);
     }
 
-    public async Task DeleteAsync(int id)
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
     {
-        await _unitOfWork.Categories.DeleteAsync(id);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.Categories.DeleteAsync(id, cancellationToken: cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken: cancellationToken);
 
         _cache.Remove(CategoriesCacheKey);
     }

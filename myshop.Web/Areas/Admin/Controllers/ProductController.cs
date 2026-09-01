@@ -34,37 +34,37 @@ public class ProductController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetData()
+    public async Task<IActionResult> GetData(CancellationToken cancellationToken = default)
     {
-        var products = await _productService.GetAllAsync();
+        var products = await _productService.GetAllAsync(cancellationToken: cancellationToken);
         return Json(new { data = products });
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetArchivedData()
+    public async Task<IActionResult> GetArchivedData(CancellationToken cancellationToken = default)
     {
-        var products = await _productService.GetArchivedAsync();
+        var products = await _productService.GetArchivedAsync(cancellationToken: cancellationToken);
         return Json(new { data = products });
     }
 
     [HttpGet]
-    public async Task<IActionResult> Create()
+    public async Task<IActionResult> Create(CancellationToken cancellationToken = default)
     {
         var productVM = new ProductVM
         {
             Product = new Product(),
-            CategoryList = await GetCategories()
+            CategoryList = await GetCategories(cancellationToken: cancellationToken)
         };
         return View(productVM);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ProductVM productVM, IFormFile? file)
+    public async Task<IActionResult> Create(ProductVM productVM, IFormFile? file, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
         {
-            productVM.CategoryList = await GetCategories();
+            productVM.CategoryList = await GetCategories(cancellationToken: cancellationToken);
             return View(productVM);
         }
 
@@ -81,7 +81,7 @@ public class ProductController : Controller
                     Content = file.OpenReadStream()
                 };
             }
-            await _productService.CreateAsync(createProduct, imageUpload);
+            await _productService.CreateAsync(createProduct, imageUpload, cancellationToken: cancellationToken);
 
             TempData["Create"] = "Product has been created successfully.";
             return RedirectToAction("Index");
@@ -89,20 +89,20 @@ public class ProductController : Controller
         catch (ArgumentException ex)
         {
             ModelState.AddModelError("file", ex.Message);
-            productVM.CategoryList = await GetCategories();
+            productVM.CategoryList = await GetCategories(cancellationToken: cancellationToken);
             return View(productVM);
         }
     }
 
     [HttpGet]
-    public async Task<IActionResult> Edit(int? id)
+    public async Task<IActionResult> Edit(int? id, CancellationToken cancellationToken = default)
     {
         if (id == null || id == 0)
         {
             return NotFound();
         }
 
-        var dto = await _productService.GetByIdForUpdateAsync(id.Value);
+        var dto = await _productService.GetByIdForUpdateAsync(id.Value, cancellationToken: cancellationToken);
         if (dto == null)
             return NotFound();
 
@@ -110,7 +110,7 @@ public class ProductController : Controller
         {
             Id = id.Value,
             Product = dto,
-            CategoryList = await GetCategories()
+            CategoryList = await GetCategories(cancellationToken: cancellationToken)
         };
 
         return View(productVM);
@@ -118,11 +118,11 @@ public class ProductController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(ProdcutEditVM productVM, IFormFile? file)
+    public async Task<IActionResult> Edit(ProdcutEditVM productVM, IFormFile? file, CancellationToken cancellationToken = default)
     {
         if (!ModelState.IsValid)
         {
-            productVM.CategoryList = await GetCategories();
+            productVM.CategoryList = await GetCategories(cancellationToken: cancellationToken);
             return View(productVM);
         }
 
@@ -145,13 +145,13 @@ public class ProductController : Controller
         catch (ArgumentException ex)
         {
             ModelState.AddModelError("file", ex.Message);
-            productVM.CategoryList = await GetCategories();
+            productVM.CategoryList = await GetCategories(cancellationToken: cancellationToken);
             return View(productVM);
         }
     }
 
     [HttpDelete]
-    public async Task<IActionResult> DeleteAjax(int? id)
+    public async Task<IActionResult> DeleteAjax(int? id, CancellationToken cancellationToken = default)
     {
         if (id == null || id == 0)
         {
@@ -160,7 +160,7 @@ public class ProductController : Controller
 
         try
         {
-            await _productService.DeleteAsync(id.Value);
+            await _productService.DeleteAsync(id.Value, cancellationToken: cancellationToken);
             return Json(new { success = true, message = "Product has been archived (soft-deleted)." });
         }
         catch (InvalidOperationException ex)
@@ -170,7 +170,7 @@ public class ProductController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> RestoreAjax(int? id)
+    public async Task<IActionResult> RestoreAjax(int? id, CancellationToken cancellationToken = default)
     {
         if (id == null || id == 0)
         {
@@ -179,7 +179,7 @@ public class ProductController : Controller
 
         try
         {
-            await _productService.RestoreAsync(id.Value);
+            await _productService.RestoreAsync(id.Value, cancellationToken: cancellationToken);
             return Json(new { success = true, message = "Product has been restored successfully." });
         }
         catch (Exception ex)
@@ -188,9 +188,9 @@ public class ProductController : Controller
         }
     }
 
-    private async Task<IEnumerable<SelectListItem>> GetCategories()
+    private async Task<IEnumerable<SelectListItem>> GetCategories(CancellationToken cancellationToken = default)
     {
-        var categories = await _categoryService.GetAllAsync();
+        var categories = await _categoryService.GetAllAsync(cancellationToken: cancellationToken);
         return categories.Select(x => new SelectListItem
         {
             Text = x.Name,
